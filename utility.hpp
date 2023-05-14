@@ -239,12 +239,16 @@ public:
         return result;
     }
     int operator-(const Time& other) const {
+        int days=0;
+        if(month_!=other.month_){
+            for(int i=other.month_+1;i<=month_-1;i++)
+                days+=days_in_month(i);
+            days+=days_in_month(other.month_)-other.day_;
+            days+=day_;
+        }
+        else days=day_-other.day_;
         // 计算当前对象和另一个对象的分钟数差
-        int minutes = (day_ - other.day_) * 24 * 60 + (hour_ - other.hour_) * 60 + (minute_ - other.minute_);
-
-        // 如果结果为负数，则将其取反
-        if (minutes < 0) minutes = -minutes;
-        
+        int minutes = days * 24 * 60 + (hour_ - other.hour_) * 60 + (minute_ - other.minute_);
         return minutes;
     }
     bool operator<(const Time& other) const {
