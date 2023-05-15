@@ -37,7 +37,7 @@ public:
     char trainID[21];
     int stationNum;
     int seatNum;
-    int ticket_left[101];
+    int ticket_left[100][101];
     char stations[101][33];
     int prices[100];
     sjtu::daytime startTime;
@@ -58,7 +58,9 @@ public:
         memcpy(money_sum,money_s,stationNum);
         for(int i=0;i<stationNum;i++){
             memcpy(stations[i],stations_[i],33);
-            ticket_left[i]=seatNum;
+            for(int j=0;j<100;j++){
+                ticket_left[j][i]=seatNum;
+            }
         }
         memcpy(prices,price,100);
         startTime=startTime_;
@@ -207,11 +209,12 @@ public:
                 int time_sum=result[0].time_sum[ans2[pointer2].pos]-result[0].time_sum[ans1[pointer1].pos]
                     -result[0].stopoverTimes[ans2[pointer2].pos-1];//两站之间的时间
                 int price_sum=result[0].money_sum[ans2[pointer2].pos]-result[0].money_sum[ans1[pointer1].pos];
+                int no=x.days_to(Time(result[0].saleDate[0]));
                 x=x+time1;
                 Time x2=x+time_sum;
                 int seats=200000;
                 for(int i=ans1[pointer1].pos;i<ans2[pointer2].pos;i++){
-                    seats=std::min(seats,result[0].ticket_left[i]);
+                    seats=std::min(seats,result[0].ticket_left[no][i]);
                 }
                 std::string ans=std::string(ans1[pointer1].ID.ID)+" "+std::string(s)+" "+x.toString()+" -> "+
                     std::string(t)+" "+x2.toString()+" "+std::to_string(price_sum)+" "+std::to_string(seats);
@@ -245,6 +248,7 @@ public:
             Time st(result[0].saleDate[0],result[0].startTime),
                     ed(result[0].saleDate[1],result[0].startTime);
             if(xxx<st || xxx>ed)continue;
+            int no_=xxx.days_to(Time(result[0].saleDate[0]));
             xxx=xxx+time11;//这是从s站发车的时间
             int time_summ;
             int cost_summ;
@@ -282,6 +286,7 @@ public:
                         Time st(results[0].saleDate[0],results[0].startTime),
                                 ed(results[0].saleDate[1],results[0].startTime);
                         if(x<st || x>ed)continue;
+                        int no=x.days_to(Time(results[0].saleDate[0]));
                         x=x+time1;//从中转站发车时间
                         int time_sum=results[0].time_sum[ans3[pointer2].pos]-results[0].time_sum[ans2[pointer1].pos]
                             -results[0].stopoverTimes[ans3[pointer2].pos-1]+(x-mid_time);//两站之间的时间
@@ -297,7 +302,7 @@ public:
                         Time x2=x+time_sum;
                         int seats=200000;
                         for(int k=ans2[pointer1].pos;k<ans3[pointer2].pos;k++){
-                            seats=std::min(seats,results[0].ticket_left[k]);
+                            seats=std::min(seats,results[0].ticket_left[no][k]);
                         }
                         ans=std::string(ans2[pointer1].ID.ID)+" "+std::string(result[0].stations[j])+" "+x.toString()+" -> "+
                             std::string(t)+" "+x2.toString()+" "+std::to_string(price_sum)+" "+std::to_string(seats);
@@ -319,7 +324,7 @@ public:
                 else flag2=1;
                 int seatsss=200000;
                 for(int k=ans1[i].pos;k<j;k++){
-                    seatsss=std::min(seatsss,result[0].ticket_left[k]);
+                    seatsss=std::min(seatsss,result[0].ticket_left[no_][k]);
                 }
                 t1=std::string(ans1[i].ID.ID)+" "+std::string(s)+" "+xxx.toString()+" -> "+
                     std::string(result[0].stations[j])+" "+mid_time.toString()+" "+std::to_string(cost_sums)+" "+std::to_string(seatsss);
@@ -345,7 +350,6 @@ public:
         std::cout<<t1_<<'\n'<<t2_<<'\n';
         return 1;
     }
-    
 };
 // trainID：车次的唯一标识符，由字母开头，字母、数字和下划线组成的字符串，长度不超过 20。
 // stationNum：车次经过的车站数量，一个不低于 2 且不超过 100 的整数。

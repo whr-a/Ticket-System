@@ -251,6 +251,17 @@ public:
         int minutes = days * 24 * 60 + (hour_ - other.hour_) * 60 + (minute_ - other.minute_);
         return minutes;
     }
+    int days_to(const Time& other){
+        int days=0;
+        if(month_!=other.month_){
+            for(int i=other.month_+1;i<=month_-1;i++)
+                days+=days_in_month(i);
+            days+=days_in_month(other.month_)-other.day_;
+            days+=day_;
+        }
+        else days=day_-other.day_;
+        return days;
+    }
     bool operator<(const Time& other) const {
         if (month_ != other.month_) {
             return month_ < other.month_;
