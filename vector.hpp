@@ -326,6 +326,16 @@ public:
 	void sort(){
 		merge_sort(data,data+now_length-1);
 	}
+	// int find_pos(T value){
+	// 	int l=0,r=now_length;
+	// 	while(l<=r){
+	// 		int mid=(l+r)>>1;
+	// 		if(data[mid]<value)l=mid+1;
+	// 		if(value<data[mid])r=mid-1;
+	// 		else return mid;
+	// 	}
+	// 	return -1;
+	// }
 	vector() {
 		data=my_alloc.allocate(2);
 		length=2;

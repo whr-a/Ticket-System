@@ -39,11 +39,6 @@ private:
         friend bool operator <= (const data &obj1,const data &obj2){
             return !(obj2<obj1);
         }
-        data operator = (const data &obj){
-            strcpy(key,obj.key);
-            value=obj.value;
-            return *this;
-        }
     };
     static const int size_of_block=120;
     class start
