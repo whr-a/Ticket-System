@@ -89,7 +89,7 @@ public:
         if(ans.empty())return -1;
         if(ans[0].privilege>login_set[username(c)])return -1;
         std::cout<<ans[0].username<<' '<<ans[0].name<<' '<<ans[0].mailAddr<<' '<<ans[0].privilege<<'\n';
-        if(strcmp(c,"lxy")==0)std::cout<<"李兴阳别开了"<<'\n';
+        //if(strcmp(c,"lxy")==0)std::cout<<"李兴阳别开了"<<'\n';
         return 1;
     }
     int modify_profile(char *c,char *u,bool p_,char *p,bool n_,char *n,bool m_,char *m,bool g_,int g){

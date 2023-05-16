@@ -1,6 +1,7 @@
 #ifndef TOKENSCANNER
 #define TOKENSCANNER
 #include <string>
+#include <cstring>
 #include <iostream>
 #include "vector.hpp"
 #include <cstdio>
@@ -18,7 +19,6 @@ public:
         line=s;
         cur=0;
     }
-    
     std::string nextToken(){
         int i=cur;
         if(line[cur]=='\0')return "";
@@ -93,17 +93,10 @@ public:
         if(x==1 || x==3 || x==7)return true;
         else return false;
     }
-    int check_num(std::string &s){
-        if(s.size()==0 || s.size()>10)return -1;
-        if(s.size()==10 && s>"2147483647")return -1;
-        if(s[0]=='0' && s.size()>1)return -1;
+    int check_num(const std::string &s){
         int ans=0;
-        for(int i=0;i<s.size();i++){
-            if(s[i]>='0' && s[i]<='9')ans=ans*10+s[i]-'0';
-            else return -1;
-        }
-        if(ans==0)return -1;
-        else return ans;
+        for(int i=0;i<s.size();i++)ans=ans*10+s[i]-'0';
+        return ans;
     }
     int check_num_(std::string &s){
         if(s.size()==0 || s.size()>10)return -1;

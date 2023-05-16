@@ -49,7 +49,7 @@ public:
     char type;
     bool release;
     train_inf(){}
-    train_inf(char* trainID_,int stn,int sen,char** stations_,int* price,
+    train_inf(char* trainID_,int stn,int sen,std::string* stations_,int* price,
         sjtu::daytime startTime_,int* traveltimes,int* stopoverTimes_,sjtu::monthtime* saleDate_,char type_,int *time_s,int *money_s){
         memcpy(trainID,trainID_,21);
         stationNum=stn;
@@ -57,7 +57,7 @@ public:
         memcpy(time_sum,time_s,stationNum);
         memcpy(money_sum,money_s,stationNum);
         for(int i=0;i<stationNum;i++){
-            memcpy(stations[i],stations_[i],33);
+            strcpy(stations[i],stations_[i].c_str());
             for(int j=0;j<100;j++){
                 ticket_left[j][i]=seatNum;
             }
@@ -79,6 +79,9 @@ public:
     station(){}
     station(char *obj){
         memcpy(name,obj,33);
+    }
+    station(const std::string &s){
+        strcpy(name,s.c_str());
     }
     friend bool operator<(const station &obj1,const station &obj2){
         return strcmp(obj1.name,obj2.name)<0;
@@ -123,12 +126,14 @@ public:
     train(){
         train_base.setfile("train.db");
     }
-    int addtrain(char* trainid,int stationnum,int seatnum,char** stations_,int* prices_,
+    int addtrain(char* trainid,int stationnum,int seatnum,std::string* stations_,int* prices_,
         sjtu::daytime starttime,int* traveltimes,int* stopovertimes,sjtu::monthtime* saledate,char type_){
             sjtu::vector<train_inf> ans=train_base.find(trainid);
             if(!ans.empty())return -1;
             int sum1[101],sum2[101];
             sum1[0]=0;sum2[0]=0;
+            // char stations_[101][33];
+            // for(int i=0;i<stationnum;i++)strcpy(stations_[i],stations[i].c_str());
             station_base.insert(station(stations_[0]),bundle(trainid,0));
             for(int i=1;i<stationnum;i++){
                 sum1[i]=sum1[i-1]+traveltimes[i-1]+stopovertimes[i-1];

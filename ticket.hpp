@@ -71,7 +71,7 @@ public:
         order_base.setfile("order.db");
         candidate_base.setfile("candidate.db");
     }
-    int buy_ticket(char* u,char* i,int mm,int dd,int n,char* f,char* t,bool q,train trains,user users,int times){
+    int buy_ticket(char* u,char* i,int mm,int dd,int n,char* f,char* t,bool q,train &trains,user &users,int times){
         if(users.login_set.find(username(u))==users.login_set.end())return -1;
         sjtu::vector<train_inf> result=trains.train_base.find(trainID(i));
         if(!result[0].release)return -1;
@@ -105,6 +105,7 @@ public:
         }
         else{
             //记入用户的订单信息
+            if(q==false)return -1;
             int money_s=result[0].money_sum[no2]-result[0].money_sum[no1];
             Time ar=x+(result[0].time_sum[no2]-result[0].time_sum[no1]-result[0].stopoverTimes[no2-1]);
             order_base.insert(username(u),order(times,day_,pending,i,f,no1,t,no2,
@@ -114,10 +115,10 @@ public:
             return -2;
         }
     }
-    int query_order(char* u,train trains,user users){
+    int query_order(char* u,train &trains,user &users){
         if(users.login_set.find(username(u))==users.login_set.end())return -1;
         sjtu::vector<order> result=order_base.find(username(u));
-        std::cout<<result.size();
+        std::cout<<result.size()<<'\n';
         for(int i=0;i<result.size();i++){
             if(result[i].status==success)std::cout<<"[success] ";
             else if(result[i].status==pending)std::cout<<"[pending] ";
@@ -127,7 +128,7 @@ public:
         }
         return 1;
     }
-    int refund_ticket(char* u,int n,train trains,user users){
+    int refund_ticket(char* u,int n,train &trains,user &users){
         if(users.login_set.find(username(u))==users.login_set.end())return -1;
         sjtu::vector<order> result=order_base.find(username(u));
         if(result.size()<n || result[n-1].status==refunded)return -1;
