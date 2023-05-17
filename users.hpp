@@ -52,6 +52,9 @@ public:
     user(){
         user_base.setfile("user.db");
     }
+    void clear(){
+        user_base.clear("user.db");
+    }
     int adduser(char* c,char* u,char *p,char *n,char *m,int g){
         if(user_base.empty()){
             account val(u,p,n,m,10);

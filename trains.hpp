@@ -126,6 +126,9 @@ public:
     train(){
         train_base.setfile("train.db");
     }
+    void clear(){
+        train_base.clear("train.db");
+    }
     int addtrain(char* trainid,int stationnum,int seatnum,std::string* stations_,int* prices_,
         sjtu::daytime starttime,int* traveltimes,int* stopovertimes,sjtu::monthtime* saledate,char type_){
             sjtu::vector<train_inf> ans=train_base.find(trainid);

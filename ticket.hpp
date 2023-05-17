@@ -71,6 +71,10 @@ public:
         order_base.setfile("order.db");
         candidate_base.setfile("candidate.db");
     }
+    void clear(){
+        order_base.clear("order.db");
+        candidate_base.clear("candidate.db");
+    }
     int buy_ticket(char* u,char* i,int mm,int dd,int n,char* f,char* t,bool q,train &trains,user &users,int times){
         if(users.login_set.find(username(u))==users.login_set.end())return -1;
         sjtu::vector<train_inf> result=trains.train_base.find(trainID(i));

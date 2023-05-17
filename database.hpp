@@ -436,6 +436,23 @@ public:
         opfile.open(name);
         getstart(head);
     }
+    void clear(std::string name){
+        std::ofstream file(name, std::ios::trunc);
+        file.close();
+        std::ifstream in;
+        in.open(name);
+        if(!in){
+            std::ofstream outfile(name);
+            outfile.seekp(0);
+            start t1;
+            outfile.write(reinterpret_cast<char*>(&t1),sizeof(start));
+            outfile.seekp(sizeof(start));
+            node t2;
+            outfile.write(reinterpret_cast<char*>(&t2),sizeof(node));
+        }
+        opfile.open(name);
+        getstart(head);
+    }
     void setfile(std::string name){
         std::ifstream in;
         in.open(name);

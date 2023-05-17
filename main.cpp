@@ -11,6 +11,7 @@
 #include "utility.hpp"
 #include "ticket.hpp"
 #include "trains.hpp"
+bool quit_=0;
 void processLine(std::string &line,user &users,train &trains,ticket &tickets);
 int main ()
 {
@@ -24,6 +25,7 @@ int main ()
         std::string input;
         if(!getline(std::cin, input))return 0;
         processLine(input,users,trains,tickets);
+        if(quit_)break;
     }
 }
 void processLine(std::string &line,user &users,train &trains,ticket &tickets){
@@ -371,8 +373,12 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
         }
         std::cout<<'['<<time<<"] "<<tickets.refund_ticket(u,n,trains,users)<<'\n';
     }else if(s=="clean"){
-
+        users.clear();
+        trains.clear();
+        tickets.clear();
+        std::cout<<'['<<time<<"] "<<0<<'\n';
     }else if(s=="exit"){
-
+        quit_=1;
+        std::cout<<'['<<time<<"] "<<"bye"<<'\n';
     }
 }
