@@ -9,7 +9,7 @@ class order
 public:
     int time;//时间戳
     int date;//第几天的车
-    status status;
+    status status_;
     char trainID[21];
     char from[33];
     int no1;//起始第几站
@@ -19,9 +19,9 @@ public:
     int num;
     Time leaving,arriving;
     order(){}
-    order(int time_,int date_,enum status status_,char* trainID_,char* from_,int no1_,
+    order(int time_,int date_,status status__,char* trainID_,char* from_,int no1_,
                 char* to_,int no2_,int price_,int num_,Time leaving_,Time arriving_):
-                time(time_),date(date_),status(status_),no1(no1_),no2(no2_),price(price_),num(num_),leaving(leaving_),arriving(arriving_){
+                time(time_),date(date_),status_(status__),no1(no1_),no2(no2_),price(price_),num(num_),leaving(leaving_),arriving(arriving_){
         strcpy(trainID,trainID_);
         strcpy(from,from_);
         strcpy(to,to_);
@@ -44,6 +44,12 @@ public:
         if(t<0)return true;
         else if(t==0 && obj1.date<obj2.date)return true;
         else return false;
+    }
+    friend bool operator==(const train_f &obj1,const train_f &obj2){
+        return (!(obj1<obj2)) && (!(obj2<obj1));
+    }
+    friend bool operator!=(const train_f &obj1,const train_f &obj2){
+        return !(obj1==obj2);
     }
 };
 class candidate
@@ -124,8 +130,8 @@ public:
         sjtu::vector<order> result=order_base.find(username(u));
         std::cout<<result.size()<<'\n';
         for(int i=0;i<result.size();i++){
-            if(result[i].status==success)std::cout<<"[success] ";
-            else if(result[i].status==pending)std::cout<<"[pending] ";
+            if(result[i].status_==success)std::cout<<"[success] ";
+            else if(result[i].status_==pending)std::cout<<"[pending] ";
             else std::cout<<"[refunded] ";
             std::cout<<result[i].trainID<<' '<<result[i].from<<' '<<result[i].leaving.toString()<<" -> "
                      <<result[i].to<<' '<<result[i].arriving.toString()<<' '<<result[i].price<<' '<<result[i].num<<'\n'; 
@@ -135,10 +141,10 @@ public:
     int refund_ticket(char* u,int n,train &trains,user &users){
         if(users.login_set.find(username(u))==users.login_set.end())return -1;
         sjtu::vector<order> result=order_base.find(username(u));
-        if(result.size()<n || result[n-1].status==refunded)return -1;
-        if(result[n-1].status==pending){
+        if(result.size()<n || result[n-1].status_==refunded)return -1;
+        if(result[n-1].status_==pending){
             order_base.erase(username(u),result[n-1]);
-            result[n-1].status=refunded;
+            result[n-1].status_=refunded;
             order_base.insert(username(u),result[n-1]);
             //移出候补队列
             candidate_base.erase(train_f(result[n-1].trainID,result[n-1].date),
@@ -147,7 +153,7 @@ public:
         else{
             //订单状态更新
             order_base.erase(username(u),result[n-1]);
-            result[n-1].status=refunded;
+            result[n-1].status_=refunded;
             order_base.insert(username(u),result[n-1]);
             //火车余票更新
             sjtu::vector<train_inf> results=trains.train_base.find(result[n-1].trainID);
@@ -173,7 +179,7 @@ public:
                         else r=mid-1;
                     }
                     order_base.erase(waiting[i].u,orders[mid]);
-                    orders[mid].status=success;
+                    orders[mid].status_=success;
                     order_base.insert(waiting[i].u,orders[mid]);
                     candidate_base.erase(train_f(result[n-1].trainID,result[n-1].date),waiting[i]);
                 }

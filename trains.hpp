@@ -71,6 +71,9 @@ public:
         type=type_;
         release=0;
     }
+    friend bool operator< (const train_inf &obj1,const train_inf &obj2){
+        return strcmp(obj1.trainID,obj2.trainID)<0;
+    }
 };
 class station
 {
@@ -100,6 +103,9 @@ public:
     int pos;
     bundle(){}
     bundle(trainID ID_,int pos_):ID(ID_),pos(pos_){}
+    friend bool operator< (const bundle &obj1,const bundle &obj2){
+        return strcmp(obj1.ID.ID,obj2.ID.ID)<0;
+    }
 };
 class sorter
 {
