@@ -11,3 +11,13 @@ user.db
 order.db
 candidate.db
 train.db
+ticket.db
+station.db
+rm
+my.out
+.cmake
+.idea
+Testing
+test.cpp
+test
+test.in

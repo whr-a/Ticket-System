@@ -5,6 +5,7 @@
 #include <cmath>
 #include <fstream>
 #include "database.hpp"
+#include "ticket_left.hpp"
 #include "vector.hpp"
 #include "Tokenscanner.hpp"
 #include "users.hpp"
@@ -12,7 +13,7 @@
 #include "ticket.hpp"
 #include "trains.hpp"
 bool quit_=0;
-void processLine(std::string &line,user &users,train &trains,ticket &tickets);
+void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts);
 int main ()
 {
     std::ios::sync_with_stdio(false);
@@ -21,14 +22,16 @@ int main ()
     user users;
     train trains;
     ticket tickets;
+    ticket_base ticket_lefts;
+    //std::cout<<sizeof(char)<<std::endl;
     while (true) {
         std::string input;
         if(!getline(std::cin, input))return 0;
-        processLine(input,users,trains,tickets);
+        processLine(input,users,trains,tickets,ticket_lefts);
         if(quit_)break;
     }
 }
-void processLine(std::string &line,user &users,train &trains,ticket &tickets){
+void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts){
     Tokenscanner scanner;
     scanner.setInput(line);
     std::string s=scanner.nextToken();
@@ -147,7 +150,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
     }else if(s=="add_train"){
         char i[21],y;
         std::string st[101];
-        int n,m,p[100],t[101],o[101];
+        int n,m,p[101],t[101],o[101];
         sjtu::daytime x;
         sjtu::monthtime d[2];
         while(scanner.haveMoreTokens()){
@@ -232,16 +235,18 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
                     break;
             }
         }
-        std::cout<<'['<<time<<"] "<<trains.addtrain(i,n,m,st,p,x,t,o,d,y)<<'\n';
+        std::cout<<'['<<time<<"] "<<trains.addtrain(i,n,m,st,p,x,t,o,d,y,ticket_lefts)<<'\n';
     }else if(s=="delete_train"){
         char i[21];
         s=scanner.nextToken();
         s=scanner.nextToken();
-        std::cout<<'['<<time<<"] "<<trains.delete_train(i)<<'\n';
+        strcpy(i,s.c_str());
+        std::cout<<'['<<time<<"] "<<trains.delete_train(i,ticket_lefts)<<'\n';
     }else if(s=="release_train"){
         char i[21];
         s=scanner.nextToken();
         s=scanner.nextToken();
+        strcpy(i,s.c_str());
         std::cout<<'['<<time<<"] "<<trains.release_train(i)<<'\n';
     }else if(s=="query_train"){
         char i[21];
@@ -261,7 +266,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
             }
         }
         std::cout<<'['<<time<<"] ";
-        if(trains.query_train(i,m,d)==-1)std::cout<<-1<<'\n';
+        if(trains.query_train(i,m,d,ticket_lefts)==-1)std::cout<<-1<<'\n';
     }else if(s=="query_ticket"){
         char st[33],to[33];
         int m,d;
@@ -287,7 +292,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
             }
         }
         std::cout<<'['<<time<<"] ";
-        trains.query_ticket(st,to,m,d,p);
+        trains.query_ticket(st,to,m,d,p,ticket_lefts);
     }else if(s=="query_transfer"){
         char st[33],to[33];
         int m,d;
@@ -313,7 +318,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
             }
         }
         std::cout<<'['<<time<<"] ";
-        if(trains.query_transfer(st,to,m,d,p)==0)std::cout<<0<<'\n';
+        if(trains.query_transfer(st,to,m,d,p,ticket_lefts)==0)std::cout<<0<<'\n';
     }else if(s=="buy_ticket"){
         char u[21],i[21],f[33],t[33];
         int m,d,n;
@@ -348,9 +353,10 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
             }
         }
         std::cout<<'['<<time<<"] ";
-        int tttt=tickets.buy_ticket(u,i,m,d,n,f,t,q,trains,users,time);
+        int tttt=tickets.buy_ticket(u,i,m,d,n,f,t,q,trains,users,time,ticket_lefts);
         if(tttt==-1)std::cout<<-1<<'\n';
         else if(tttt==-2)std::cout<<"queue\n";
+        else std::cout<<tttt<<'\n';
     }else if(s=="query_order"){
         char u[21];
         scanner.nextToken();
@@ -371,11 +377,12 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets){
                     break;
             }
         }
-        std::cout<<'['<<time<<"] "<<tickets.refund_ticket(u,n,trains,users)<<'\n';
+        std::cout<<'['<<time<<"] "<<tickets.refund_ticket(u,n,trains,users,ticket_lefts)<<'\n';
     }else if(s=="clean"){
         users.clear();
         trains.clear();
         tickets.clear();
+        ticket_lefts.clear();
         std::cout<<'['<<time<<"] "<<0<<'\n';
     }else if(s=="exit"){
         quit_=1;

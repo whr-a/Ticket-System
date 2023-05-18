@@ -8,6 +8,7 @@ add_executable(code
         exceptions.hpp
         main.cpp
         map.hpp
+        ticket_left.hpp
         ticket.hpp
         Tokenscanner.hpp
         trains.hpp

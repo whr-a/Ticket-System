@@ -94,37 +94,42 @@ public:
     daytime(){}
     daytime(int hh_,int mm_):hh(hh_),mm(mm_){}
     daytime(const daytime &other):hh(other.hh),mm(other.mm){}
-    int operator-(const daytime &other){
-        int c1;
-        if(other.hh<hh){
-            c1=other.hh+24-hh;
-            return c1*60+other.mm-mm;
-        }
-        else if(other.hh==hh && other.mm<mm){
-            return 1440-mm+other.mm;
-        }
-        else return (other.hh-hh)*60+other.mm-mm;
-    }
-    daytime operator+=(const int &minute){
-        mm+=minute;
-        if(mm>=60){
-            int t=mm/60;
-            mm=mm%60;
-            hh+=t;
-            if(t>=24)t%=24;
-        }
+    daytime operator=(const daytime &other){
+        hh=other.hh;
+        mm=other.mm;
         return *this;
     }
-    daytime operator-=(const int &minute){
-        mm-=minute;
-        if(mm<0){
-            int t=-(mm+1)/60+1;
-            mm+=t*60;
-            hh-=t;
-            if(hh<0)hh+=(-(hh+1)/24+1)*24;
-        }
-        return *this;
-    }
+    // int operator-(const daytime &other){
+    //     int c1;
+    //     if(other.hh<hh){
+    //         c1=other.hh+24-hh;
+    //         return c1*60+other.mm-mm;
+    //     }
+    //     else if(other.hh==hh && other.mm<mm){
+    //         return 1440-mm+other.mm;
+    //     }
+    //     else return (other.hh-hh)*60+other.mm-mm;
+    // }
+    // daytime operator+=(const int &minute){
+    //     mm+=minute;
+    //     if(mm>=60){
+    //         int t=mm/60;
+    //         mm=mm%60;
+    //         hh+=t;
+    //         if(t>=24)t%=24;
+    //     }
+    //     return *this;
+    // }
+    // daytime operator-=(const int &minute){
+    //     mm-=minute;
+    //     if(mm<0){
+    //         int t=-(mm+1)/60+1;
+    //         mm+=t*60;
+    //         hh-=t;
+    //         if(hh<0)hh+=(-(hh+1)/24+1)*24;
+    //     }
+    //     return *this;
+    // }
 };
 class monthtime
 {
@@ -133,6 +138,11 @@ public:
     monthtime(){}
     monthtime(int mm_,int dd_):mm(mm_),dd(dd_){}
     monthtime(const monthtime &other):mm(other.mm),dd(other.dd){}
+    monthtime operator=(const monthtime &other){
+        dd=other.dd;
+        mm=other.mm;
+        return *this;
+    }
     // int operator- (const monthtime &other){
     //     if(other.mm-)
     // }
@@ -288,6 +298,13 @@ public:
 
     bool operator>=(const Time& other) const {
         return *this > other || *this == other;
+    }
+    Time operator=(const Time &other){
+        month_=other.month_;
+        day_=other.day_;
+        hour_=other.hour_;
+        minute_=other.minute_;
+        return *this;
     }
 
 private:

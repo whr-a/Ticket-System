@@ -324,6 +324,7 @@ public:
 		delete[] temp;
 	}
 	void sort(){
+		if(now_length==0)return;
 		merge_sort(data,data+now_length-1);
 	}
 	// int find_pos(T value){
@@ -349,12 +350,20 @@ public:
 			my_alloc.construct(data+i,other.data[i]);
 		}
 	}
+	vector(vector &&other){
+		data=other.data;
+		length=other.length;
+		other.data=nullptr;
+		other.length=0;
+	}
 	/**
 	 * TODO Destructor
 	 */
 	~vector() {
-		for(int i=0;i<now_length;i++)my_alloc.destroy(data+i);
-		my_alloc.deallocate(data,length);
+		if(data!=nullptr){
+			for(int i=0;i<now_length;i++)my_alloc.destroy(data+i);
+			my_alloc.deallocate(data,length);
+		}
 	}
 	/**
 	 * TODO Assignment operator

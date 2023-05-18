@@ -1,6 +1,7 @@
 #ifndef DATABASE
 #define DATABASE
 
+#include <exception>
 #include <iostream>
 #include <cstring>
 #include <string>
@@ -9,6 +10,7 @@
 #include <fstream>
 #include "utility.hpp"
 #include "vector.hpp"
+
 template<class keys,class T>
 class database
 {
@@ -69,6 +71,7 @@ private:
             pos_of_fa=0;
             front_pos=0;
             back_pos=0;
+            memset(edge,0,sizeof(edge));
         }
     };
     std::fstream opfile;
@@ -76,27 +79,38 @@ private:
     //int cnt=0;
     void getstart(start &st){
         opfile.seekg(0);
-        opfile.read(reinterpret_cast<char*>(&st),sizeof(st));
+        opfile.read(reinterpret_cast<char*>(&st),sizeof(start));
     }
     void writestart(start &st){
         opfile.seekp(0);
-        opfile.write(reinterpret_cast<char*>(&st),sizeof(st));
+        opfile.write(reinterpret_cast<char*>(&st),sizeof(start));
     }
-    void getnode(node &obj,int num){
-        opfile.seekg(sizeof(start)+(num-1)*sizeof(node));
-        opfile.read(reinterpret_cast<char*>(&obj),sizeof(obj));
+    void getnode(node &obj,int num) {
+        opfile.seekg(sizeof(start) + (num-1)*sizeof(node));
+        opfile.read(reinterpret_cast<char*>(&obj),sizeof(node));
+        if(!opfile.good()) {
+            opfile.seekg(0,std::ios::beg);
+            std::cout<<(int)opfile.tellg()<<std::endl;
+            std::terminate();
+        }
     }
     void writenode(node &obj,int num){
         opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
-        opfile.write(reinterpret_cast<char*>(&obj),sizeof(obj));
+        opfile.write(reinterpret_cast<char*>(&obj),sizeof(node));
     }
     int finds(const keys &key,int num){
         node temp;
         getnode(temp,num);
-        if(temp.type==leaf)return num;
-        int t=sjtu::upper_bound(temp.value,temp.value+temp.now_num,data(key,T()))-temp.value;
-        //if(temp.edge[t]>head.num_of_block)std::cout<<114514<<std::endl;
-        return finds(key,temp.edge[t]);
+        if(temp.type == leaf)return num;
+        int l = 0, r = temp.now_num - 1, mid;
+        while (l <= r) {
+            int mid = (l + r) >> 1;
+            if (temp.value[mid].key < key)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        return finds(key,temp.edge[r+1]);
     }
     int find_pos(const data &obj,int num){
         node temp;
@@ -473,42 +487,27 @@ public:
         opfile.close();
     }
     sjtu::vector<T> find(const keys &key){
-        //cnt++;
-        int num=finds(key,head.pos_of_root);
+        int num = finds(key,head.pos_of_root);
         node temp;
         getnode(temp,num);
-        int t=sjtu::lower_bound(temp.value,temp.value+temp.now_num,data(key,T()))-temp.value;
-        if(t==temp.now_num)--t;
-        int x=t;
-        while(true){
-            if(x==-1){
-                if(temp.back_pos==0){
-                    x++;
-                    break;
-                }
-                getnode(temp,temp.back_pos);
-                x=temp.now_num-1;
-                if(temp.value[x].key!=key){
-                    getnode(temp,temp.front_pos);
-                    x=0;
-                    break;
-                }
-            }
-            if(temp.value[x].key!=key){
-                x++;
-                break;
-            }
-            x--;
+        int l=0,r=temp.now_num-1;
+        while(l<r){
+            int mid=(l+r)>>1;
+            if(key<=temp.value[mid].key)r=mid;
+            else l=mid+1;
         }
+        int x=l;
         sjtu::vector<T> ans;
+        if(temp.now_num==0)return ans;
         while(true){
             if(x==temp.now_num){
                 if(temp.front_pos==0)break;
                 getnode(temp,temp.front_pos);
                 x=0;
             }
+            //std::cout<<x<<'*'<<std::endl;
             if(temp.value[x].key==key)ans.push_back(temp.value[x].value);
-            else break;
+            else if(key<temp.value[x].key)break;
             x++;
         }
         return ans;
@@ -587,6 +586,13 @@ public:
         getnode(root,head.pos_of_root);
         if(root.type==leaf && root.now_num==0)return true;
         else return false;
+    }
+    void prints(){
+        node root;
+        getnode(root,head.pos_of_root);
+        std::cout<<std::endl<<"***********"<<std::endl;
+        for(int i=0; i< root.now_num;i++)std::cout<<root.value[i].key<<std::endl;
+        std::cout<< "***********"<<std::endl;
     }
 };
 
