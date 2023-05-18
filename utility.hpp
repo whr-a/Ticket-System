@@ -143,6 +143,16 @@ public:
         mm=other.mm;
         return *this;
     }
+    friend bool operator<(const monthtime &obj1,const monthtime &obj2){
+        if(obj1.mm<obj2.mm)return true;
+        else if(obj1.mm==obj2.mm && obj1.dd<obj2.dd)return true;
+        else return false;
+    }
+    friend bool operator>(const monthtime &obj1,const monthtime &obj2){
+        if(obj1.mm>obj2.mm)return true;
+        else if(obj1.mm==obj2.mm && obj1.dd>obj2.dd)return true;
+        else return false;
+    }
     // int operator- (const monthtime &other){
     //     if(other.mm-)
     // }

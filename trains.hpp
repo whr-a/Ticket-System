@@ -172,7 +172,7 @@ public:
             if(!ans.empty())return -1;
             int sum1[101],sum2[101],left_temp[101];
             sum1[0]=0;sum2[0]=0;
-            station_base.insert(station(stations_[0]),bundle(trainid,0));
+            //station_base.insert(station(stations_[0]),bundle(trainid,0));
             left_temp[0]=seatnum;
             // std::cout<<"**************\n";
             for(int i=1;i<stationnum;i++){
@@ -180,16 +180,16 @@ public:
                 sum1[i]=sum1[i-1]+traveltimes[i-1]+stopovertimes[i-1];
                 // std::cout<<sum1[i]<<'\n';
                 sum2[i]=sum2[i-1]+prices_[i-1];
-                station_base.insert(station(stations_[i]),bundle(trainid,i));
+                //station_base.insert(station(stations_[i]),bundle(trainid,i));
             }
             // std::cout<<"**************"<<std::endl;
             train_base.insert(trainID(trainid),train_inf(trainid,stationnum,seatnum,stations_,
             prices_,starttime,traveltimes,stopovertimes,saledate,type_,sum1,sum2));
-            Time obj1(saledate[0]),obj2(saledate[1]);
-            int xx=obj2.days_to(obj1);
-            for(int i=0;i<=xx;i++){
-                ticket_base_.add(train_f(trainid,i),ticket_left(left_temp,stationnum));
-            }
+            // Time obj1(saledate[0]),obj2(saledate[1]);
+            // int xx=obj2.days_to(obj1);
+            // for(int i=0;i<=xx;i++){
+            //     ticket_base_.add(train_f(trainid,i),ticket_left(left_temp,stationnum));
+            // }
             return 0;
     }
     int delete_train(char* trainid,ticket_base &ticket_base_){
@@ -206,23 +206,47 @@ public:
         train_base.erase(trainid,ans[0]);
         return 0;
     }
-    int release_train(char* trainid){
+    int release_train(char* trainid,ticket_base &ticket_base_){
         // train_base.prints();
         sjtu::vector<train_inf> ans=train_base.find(trainID(trainid));
         if(ans.empty() || ans[0].release)return -1;
         train_base.erase(trainid,ans[0]);
         ans[0].release=1;
         train_base.insert(trainid,ans[0]);//可优化
+        //把站-》火车处理
+        for(int i=0;i<ans[0].stationNum;i++){
+            station_base.insert(station(ans[0].stations[i]),bundle(trainid,i));
+        }
+        //发票
+        Time obj1(ans[0].saleDate[0]),obj2(ans[0].saleDate[1]);
+        int xx=obj2.days_to(obj1);
+        int left_temp[101];
+        for(int i=0;i<ans[0].stationNum;i++){
+            left_temp[i]=ans[0].seatNum;
+        }
+        for(int i=0;i<=xx;i++){
+            ticket_base_.add(train_f(trainid,i),ticket_left(left_temp,ans[0].stationNum));
+        }
         return 0;
     }
     int query_train(char* trainid,int month,int day,ticket_base &ticket_base_){
         sjtu::vector<train_inf> ans=train_base.find(trainid);
         if(ans.empty())return -1;
-        if(Time(ans[0].saleDate[0])>Time(month,day,0,0)
-            || Time(ans[0].saleDate[1])<Time(month,day,0,0))return -1;
-        int xx=Time(month,day,0,0).days_to(Time(ans[0].saleDate[0]));
-        ticket_left left_temp(ticket_base_.query(train_f(trainid,xx)));
         
+        if(ans[0].saleDate[0]>sjtu::monthtime(month,day)
+            || ans[0].saleDate[1]<sjtu::monthtime(month,day)){
+                // std::cout<<222<<std::endl;
+                return -1;
+            }
+        int xx=Time(month,day,0,0).days_to(Time(ans[0].saleDate[0]));
+        
+        ticket_left left_temp;
+        if(!ans[0].release){
+            for(int i=0;i<ans[0].stationNum;i++)left_temp.ticket[i]=ans[0].seatNum;
+        }
+        else{
+            left_temp=ticket_base_.query(train_f(trainid,xx));
+        }
         std::cout<<trainid<<' '<<ans[0].type<<'\n';
         std::cout<<ans[0].stations[0]<<" xx-xx xx:xx -> "
                  <<Time(month,day,ans[0].startTime.hh,ans[0].startTime.mm).toString()<<" 0 "
@@ -248,7 +272,7 @@ public:
     void query_ticket(char* s,char* t,int month,int day,bool p,ticket_base &ticket_base_){//p==0 为time，p==1为cost
         sjtu::vector<bundle> ans1=station_base.find(station(s));//找到经过出发站的所有车
         sjtu::vector<bundle> ans2=station_base.find(station(t));//找到经过到达站的所有车
-        //std::cout<<ans1.size()<<' '<<ans2.size()<<std::endl;
+        // std::cout<<ans1.size()<<' '<<ans2.size()<<std::endl;
         int pointer1=0,pointer2=0;//双指针
         sjtu::vector<sorter> anss;//答案存在里面
         while(pointer1<ans1.size() && pointer2<ans2.size()){//搜索
@@ -262,8 +286,9 @@ public:
                 continue;
             }
             else{//找到了同时经过这两站的车，id为ans1[pointer1].ID
-                // if(strcmp(ans1[pointer1].ID.ID,"Deathlessthroughout")==0){
-                //     std::cout<<ans1[pointer1].pos<<' '<<ans2[pointer2].pos<<"***"<<std::endl;
+                // if(strcmp(ans1[pointer1].ID.ID,"motion")==0){
+                //     // std::cout<<ans1[pointer1].pos<<' '<<ans2[pointer2].pos<<"***"<<std::endl;
+                    
                 // }
                 if(ans1[pointer1].pos>=ans2[pointer2].pos){//顺序反了
                     ++pointer1;

@@ -50,6 +50,10 @@ public:
     friend bool operator<(const ticket_left &obj1,const ticket_left &obj2){
         return false;
     }
+    ticket_left operator=(const ticket_left &obj){
+        for(int i=0;i<101;i++)ticket[i]=obj.ticket[i];
+        return *this;
+    }
 };
 class ticket_base
 {

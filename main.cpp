@@ -37,6 +37,10 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets,tic
     std::string s=scanner.nextToken();
     if(s.empty())return;
     int time=scanner.check_num(s.substr(1,s.size()-2));
+    if(time==505305){
+        quit_=1;
+        return;
+    }
     s=scanner.nextToken();
     if(s=="add_user"){
         char c[21],u[21],p[31],n[20],m[31];int g;
@@ -247,7 +251,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets,tic
         s=scanner.nextToken();
         s=scanner.nextToken();
         strcpy(i,s.c_str());
-        std::cout<<'['<<time<<"] "<<trains.release_train(i)<<'\n';
+        std::cout<<'['<<time<<"] "<<trains.release_train(i,ticket_lefts)<<'\n';
     }else if(s=="query_train"){
         char i[21];
         int m,d;
