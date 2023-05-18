@@ -37,7 +37,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets,tic
     std::string s=scanner.nextToken();
     if(s.empty())return;
     int time=scanner.check_num(s.substr(1,s.size()-2));
-    // if(time==505305){
+    // if(time==750566){
     //     quit_=1;
     //     return;
     // }

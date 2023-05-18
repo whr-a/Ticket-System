@@ -412,7 +412,7 @@ public:
                         int time1=results[0].time_sum[ans2[pointer1].pos];//第二辆车到中转站的时间
                         x=x+time1;//第二辆车从中转站出发的时间
                         x.setMonth(mid_time.getMonth());x.setDay(mid_time.getDay());//这里出问题了
-                        if(x<=mid_time)x=x+24*60;
+                        if(x<mid_time)x=x+24*60;
                         Time st(results[0].saleDate[0],results[0].startTime),
                                 ed(results[0].saleDate[1],results[0].startTime);
                         x=x-time1;
