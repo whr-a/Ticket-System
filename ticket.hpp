@@ -115,7 +115,7 @@ public:
         }
         else{
             //记入用户的订单信息
-            if(q==false){
+            if(q==false || n>result[0].seatNum){
                 // std::cout<<333<<std::endl;
                 return -1;
             }
