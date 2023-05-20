@@ -4,6 +4,7 @@
 #include "users.hpp"
 #include "ticket_left.hpp"
 #include "utility.hpp"
+#include "database_copy.hpp"
 enum status{success,pending,refunded};
 class order
 {

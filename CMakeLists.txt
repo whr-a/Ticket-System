@@ -4,7 +4,7 @@ project(code)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(code
-        database.hpp
+        database_copy.hpp
         exceptions.hpp
         main.cpp
         map.hpp

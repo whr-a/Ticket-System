@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <string>
-#include "database.hpp"
+#include "database_copy.hpp"
 class train_f
 {
 public:

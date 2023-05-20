@@ -4,7 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include "map.hpp"
-#include "database.hpp"
+#include "database_copy.hpp"
 #include "utility.hpp"
 #include "ticket_left.hpp"
 class trainID

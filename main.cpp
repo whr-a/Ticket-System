@@ -4,7 +4,7 @@
 #include <string>
 #include <cmath>
 #include <fstream>
-#include "database.hpp"
+#include "database_copy.hpp"
 #include "ticket_left.hpp"
 #include "vector.hpp"
 #include "Tokenscanner.hpp"
@@ -29,6 +29,7 @@ int main ()
         if(!getline(std::cin, input))return 0;
         processLine(input,users,trains,tickets,ticket_lefts);
         if(quit_)break;
+        std::cout.flush();
     }
 }
 void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts){
