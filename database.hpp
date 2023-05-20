@@ -42,7 +42,7 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=15;
+    static const int size_of_block=16;
     class start
     {
     public:
