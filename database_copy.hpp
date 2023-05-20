@@ -42,7 +42,8 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=20;
+    static const int size_of_block=40;
+    std::fstream opfile;
     class start
     {
     public:
@@ -332,7 +333,6 @@ private:
             return tailNode;
         }
     };
-    std::fstream opfile;
     start head;
     LinkedHashMap map;
     //int cnt=0;
