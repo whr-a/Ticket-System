@@ -303,7 +303,7 @@ private:
         Node* head;  // 链表头节点
         Node* tail;  // 链表尾节点
         MyUnorderedMap map;  // 哈希表，用于快速查找节点
-        static const size_t capacity = 128;  // 容量限制，可以根据需求进行调整
+        static const size_t capacity = 48;  // 容量限制，可以根据需求进行调整
 
         // 将节点插入到链表头部
         void insertToHead(Node* node) {
