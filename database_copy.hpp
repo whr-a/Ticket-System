@@ -42,7 +42,7 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=10;
+    static const int size_of_block=20;
     std::fstream opfile;
 
     class start
@@ -112,7 +112,7 @@ private:
         class MyUnorderedMap {
         public:
             // 构造函数
-            const static size_t TableSize=128;
+            const static size_t TableSize=256;
             MyUnorderedMap() {
                 table = new Nodes*[TableSize]();
             }
@@ -311,7 +311,7 @@ private:
         Node* head;  // 链表头节点
         Node* tail;  // 链表尾节点
         MyUnorderedMap map;  // 哈希表，用于快速查找节点
-        static const size_t capacity = 48;  // 容量限制，可以根据需求进行调整
+        static const size_t capacity = 256;  // 容量限制，可以根据需求进行调整
 
         // 将节点插入到链表头部
         void insertToHead(Node* node) {
