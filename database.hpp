@@ -42,7 +42,7 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=120;
+    static const int size_of_block=20;
     class start
     {
     public:
@@ -86,13 +86,9 @@ private:
         opfile.write(reinterpret_cast<char*>(&st),sizeof(start));
     }
     void getnode(node &obj,int num) {
+        
         opfile.seekg(sizeof(start) + (num-1)*sizeof(node));
         opfile.read(reinterpret_cast<char*>(&obj),sizeof(node));
-        if(!opfile.good()) {
-            opfile.seekg(0,std::ios::beg);
-            std::cout<<(int)opfile.tellg()<<std::endl;
-            std::terminate();
-        }
     }
     void writenode(node &obj,int num){
         opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
@@ -587,13 +583,13 @@ public:
         if(root.type==leaf && root.now_num==0)return true;
         else return false;
     }
-    void prints(){
-        node root;
-        getnode(root,head.pos_of_root);
-        std::cout<<std::endl<<"***********"<<std::endl;
-        for(int i=0; i< root.now_num;i++)std::cout<<root.value[i].key<<std::endl;
-        std::cout<< "***********"<<std::endl;
-    }
+    // void prints(){
+    //     node root;
+    //     getnode(root,head.pos_of_root);
+    //     std::cout<<std::endl<<"***********"<<std::endl;
+    //     for(int i=0; i< root.now_num;i++)std::cout<<root.value[i].key<<std::endl;
+    //     std::cout<< "***********"<<std::endl;
+    // }
 };
 
 #endif
