@@ -42,8 +42,9 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=40;
+    static const int size_of_block=20;
     std::fstream opfile;
+
     class start
     {
     public:
@@ -56,6 +57,7 @@ private:
         start(int pos_of_root_,int num_of_block_)
             :pos_of_root(pos_of_root_),num_of_block(num_of_block_){}
     };
+    start head;
     enum nodetype{index,leaf};
     class node
     {
@@ -75,30 +77,38 @@ private:
             memset(edge,0,sizeof(edge));
         }
     };
+    void writenode(node *obj,int num){
+        opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
+        opfile.write(reinterpret_cast<char*>(obj),sizeof(node));
+    }
+    void writenode_(node &obj,int num){
+        opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
+        opfile.write(reinterpret_cast<char*>(&obj),sizeof(node));
+    }
+    //LinkedHashMap节点定义
+    struct Node {
+        int key;
+        node* value;
+        Node* prev;
+        Node* next;
+
+        Node()
+            : prev(nullptr), next(nullptr) {}
+
+        Node(int k,node* v)
+            : key(k), value(v), prev(nullptr), next(nullptr) {}
+    };
+    // 哈希表节点定义
+    struct Nodes {
+        int key;
+        Node* value;
+        Nodes* next;
+
+        Nodes(const int& k,Node* v)
+            : key(k), value(v), next(nullptr) {}
+    };
     class LinkedHashMap {
     public:
-        //LinkedHashMap节点定义
-        struct Node {
-            int key;
-            node* value;
-            Node* prev;
-            Node* next;
-
-            Node()
-                : prev(nullptr), next(nullptr) {}
-
-            Node(int k,node* v)
-                : key(k), value(v), prev(nullptr), next(nullptr) {}
-        };
-        // 哈希表节点定义
-        struct Nodes {
-            int key;
-            Node* value;
-            Nodes* next;
-
-            Nodes(const int& k,Node* v)
-                : key(k), value(v), next(nullptr) {}
-        };
         class MyUnorderedMap {
         public:
             // 构造函数
@@ -224,32 +234,30 @@ private:
         }
 
         // 析构函数
-        ~LinkedHashMap() {
-            clear();
-            delete head;
-            delete tail;
-        }
+        ~LinkedHashMap() {}
 
         // 插入键值对
-        void insert(const int& key,node* value) {
+        Node* insert(const int& key,node* value) {
             if (map.contains(key)) {
                 // 键已存在，更新值并将节点移到链表头部
-                Node* node = map[key];
-                node->value = value;
-                moveToHead(node);
+                Node* node_ = map[key];
+                node_->value = value;
+                moveToHead(node_);
+                return nullptr;
             } else {
                 // 键不存在，创建新节点并插入到链表头部
-                Node* node = new Node(key, value);
-                map[key] = node;
-                insertToHead(node);
+                Node* node_ = new Node(key, value);
+                map[key] = node_;
+                insertToHead(node_);
 
                 // 检查容量是否超出限制
                 if (map.size() > capacity) {
                     // 超出限制，移除链表尾部的节点
                     Node* tailNode = removeTail();
-                    map.erase(tailNode->key);
-                    delete tailNode->value;
-                    delete tailNode;
+                    return tailNode;
+                    // map.erase(tailNode->key);
+                    // delete tailNode->value;
+                    // delete tailNode;
                 }
             }
         }
@@ -299,8 +307,7 @@ private:
         }
 
         // 链表节点定义
-        
-    private:
+    
         Node* head;  // 链表头节点
         Node* tail;  // 链表尾节点
         MyUnorderedMap map;  // 哈希表，用于快速查找节点
@@ -333,7 +340,6 @@ private:
             return tailNode;
         }
     };
-    start head;
     LinkedHashMap map;
     //int cnt=0;
     void getstart(start &st){
@@ -347,21 +353,20 @@ private:
     void getnode(node *&obj,int num) {
         if(!map.contains(num)){
             node* newNode = new node();
-            map.insert(num,newNode);
+            Node* x=map.insert(num,newNode);
+            if(x!=nullptr){
+                writenode(x->value,x->key);
+                map.map.erase(x->key);
+                delete x->value;
+                delete x;
+            }
             opfile.seekg(sizeof(start) + (num-1)*sizeof(node));
             opfile.read(reinterpret_cast<char*>(newNode),sizeof(node));
             obj=newNode;
         }
         else obj=map[num];
     }
-    void writenode(node *obj,int num){
-        opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
-        opfile.write(reinterpret_cast<char*>(obj),sizeof(node));
-    }
-    void writenode_(node &obj,int num){
-        opfile.seekp(sizeof(start)+(num-1)*sizeof(node));
-        opfile.write(reinterpret_cast<char*>(&obj),sizeof(node));
-    }
+    
     int finds(const keys &key,int num){
         node* temp;
         getnode(temp,num);
@@ -390,21 +395,18 @@ private:
         node* temp;
         getnode(temp,pos);
         temp->pos_of_fa=fa_pos;
-        writenode(temp,pos);
     }
     void updateleft(int pos,int left){
         if(pos==0)return;
         node* temp;
         getnode(temp,pos);
         temp->back_pos=left;
-        writenode(temp,pos);
     }
     void updateright(int pos,int right){
         if(pos==0)return;
         node* temp;
         getnode(temp,pos);
         temp->front_pos=right;
-        writenode(temp,right);
     }
     void flashindex(int fa_pos,int son_pos,const data &obj){
         node* temp;
@@ -417,7 +419,6 @@ private:
         temp->value[t]=obj;
         temp->edge[t+1]=son_pos;
         temp->now_num++;
-        writenode(temp,fa_pos);
         if(temp->now_num==size_of_block){
             node temp2;
             int mid=size_of_block/2;
@@ -434,7 +435,6 @@ private:
             if(temp->pos_of_fa==0){
                 temp->pos_of_fa=head.num_of_block+2;
                 temp2.pos_of_fa=head.num_of_block+2;
-                writenode(temp,fa_pos);
                 writenode_(temp2,head.num_of_block+1);
                 head.num_of_block++;
                 node temp3;
@@ -449,7 +449,6 @@ private:
             }
             else{
                 temp2.pos_of_fa=temp->pos_of_fa;
-                writenode(temp,fa_pos);
                 writenode_(temp2,head.num_of_block+1);
                 head.num_of_block++;
                 flashindex(temp->pos_of_fa,head.num_of_block,temp->value[mid]);
@@ -470,7 +469,6 @@ private:
         if(temp1->pos_of_fa==0){
             temp1->pos_of_fa=head.num_of_block+2;
             temp2.pos_of_fa=head.num_of_block+2;
-            writenode(temp1,pos);
             writenode_(temp2,head.num_of_block+1);
             head.num_of_block++;
             node temp3;
@@ -485,7 +483,6 @@ private:
         }
         else{
             temp2.pos_of_fa=temp1->pos_of_fa;
-            writenode(temp1,pos);
             writenode_(temp2,head.num_of_block+1);
             head.num_of_block++;
             flashindex(temp1->pos_of_fa,head.num_of_block,temp2.value[0]);
@@ -518,17 +515,14 @@ private:
             getnode(son,temp->edge[0]);
             son->pos_of_fa=0;
             head.pos_of_root=temp->edge[0];
-            writenode(son,temp->edge[0]);
             return;
         }
         int t=sjtu::upper_bound(temp->value,temp->value+temp->now_num,delindex)-temp->value;
         for(int i=t-1;i<temp->now_num-1;i++)temp->value[i]=temp->value[i+1];
         for(int i=t;i<temp->now_num;i++)temp->edge[i]=temp->edge[i+1];
         temp->now_num--;
-        if(pos==head.pos_of_root){
-            writenode(temp,pos);
-            return;
-        }
+        if(pos==head.pos_of_root)return;
+        
         if(temp->now_num<size_of_block/2-1){
             node* fa;
             getnode(fa,temp->pos_of_fa);
@@ -548,13 +542,9 @@ private:
                     rightbro->edge[rightbro->now_num-1]=rightbro->edge[rightbro->now_num];
                     rightbro->now_num--;
                     temp->now_num++;
-                    writenode(temp,pos);
-                    writenode(rightbro,fa->edge[tx+1]);
-                    writenode(fa,temp->pos_of_fa);
                 }
                 else{
                     merge(pos,temp,rightbro,fa,tx);
-                    writenode(temp,pos);
                     balanceindex(temp->pos_of_fa,fa->value[tx]);
                 }
             }
@@ -573,18 +563,13 @@ private:
                     temp->now_num++;
                     leftbro->now_num--;
                     fa->value[tx-1]=leftbro->value[leftbro->now_num];
-                    writenode(temp,pos);
-                    writenode(leftbro,fa->edge[tx-1]);
-                    writenode(fa,temp->pos_of_fa);
                 }
                 else{
                     merge(fa->edge[tx-1],leftbro,temp,fa,tx-1);
-                    writenode(leftbro,fa->edge[tx-1]);
                     balanceindex(temp->pos_of_fa,fa->value[tx-1]);
                 }
             }
         }
-        else writenode(temp,pos);
     }
     void balanceleaf(int pos){//平衡叶子节点，现在大小小于size_of_block-1
         node *temp,*temp_back=nullptr,*temp_front=nullptr;//前兄弟和后兄弟节点
@@ -602,9 +587,6 @@ private:
                 int t=sjtu::upper_bound(temp_fa->value,temp_fa->value+temp_fa->now_num,
                                 temp->value[size_of_block/2-2])-temp_fa->value;
                 temp_fa->value[t-1]=temp_front->value[0];
-                writenode(temp,pos);
-                writenode(temp_front,temp->front_pos);
-                writenode(temp_fa,temp->pos_of_fa);
             }
             else{//不能借，要合并
                 for(int i=size_of_block/2-2;i<size_of_block-3;i++)
@@ -612,7 +594,6 @@ private:
                 temp->front_pos=temp_front->front_pos;
                 updateleft(temp->front_pos,pos);
                 temp->now_num=size_of_block-3;
-                writenode(temp,pos);
                 balanceindex(temp->pos_of_fa,temp_front->value[0]);
             }
             return;
@@ -628,9 +609,6 @@ private:
                 int t=sjtu::upper_bound(temp_fa->value,temp_fa->value+temp_fa->now_num,
                                  temp->value[0])-temp_fa->value;
                 temp_fa->value[t]=temp->value[0];
-                writenode(temp,pos);
-                writenode(temp_back,temp->back_pos);
-                writenode(temp_fa,temp->pos_of_fa);
             }
             else{//合并
                 for(int i=size_of_block/2-1;i<size_of_block-3;i++)
@@ -638,7 +616,6 @@ private:
                 temp_back->front_pos=temp->front_pos;
                 updateleft(temp_back->front_pos,temp->back_pos);
                 temp_back->now_num=size_of_block-3;
-                writenode(temp_back,temp->back_pos);
                 balanceindex(temp_back->pos_of_fa,temp->value[0]);
             }
             return;
@@ -657,9 +634,6 @@ private:
             int t=sjtu::upper_bound(temp_fa->value,temp_fa->value+temp_fa->now_num,
                                 temp->value[0])-temp_fa->value;
             temp_fa->value[t]=temp->value[0];
-            writenode(temp,pos);
-            writenode(temp_back,temp->back_pos);
-            writenode(temp_fa,temp->pos_of_fa);
             return;
         }
         if(temp_front->now_num>size_of_block/2-1){//找后面借
@@ -672,9 +646,6 @@ private:
             int t=sjtu::upper_bound(temp_fa->value,temp_fa->value+temp_fa->now_num,
                             temp->value[size_of_block/2-2])-temp_fa->value;
             temp_fa->value[t-1]=temp_front->value[0];//修改
-            writenode(temp,pos);
-            writenode(temp_front,temp->front_pos);
-            writenode(temp_fa,temp->pos_of_fa);
             return;
         }
         //都不能借，只好找前面合并
@@ -683,7 +654,6 @@ private:
         temp->front_pos=temp_front->front_pos;
         updateleft(temp->front_pos,pos);
         temp->now_num=size_of_block-3;
-        writenode(temp,pos);
         balanceindex(temp->pos_of_fa,temp_front->value[0]);
     }
     void freshleft(int pos,const data &obj){
@@ -693,7 +663,6 @@ private:
         int t=sjtu::upper_bound(temp->value,temp->value+temp->now_num,obj)-temp->value;
         if(t!=0){
             temp->value[t-1]=obj;
-            writenode(temp,pos);
         }
         else freshleft(temp->pos_of_fa,obj);
     }
@@ -717,6 +686,7 @@ public:
     void clear(std::string name){
         std::ofstream file(name, std::ios::trunc);
         file.close();
+        map.clear();
         std::ifstream in;
         in.open(name);
         if(!in){
@@ -748,6 +718,20 @@ public:
     }
     ~database(){
         writestart(head);
+        for (int i = 0; i < map.map.TableSize; i++) {
+            Nodes* currNode = map.map.table[i];
+            while (currNode != nullptr) {
+                Nodes* nextNode = currNode->next;
+                writenode(currNode->value->value,currNode->value->key);
+                delete currNode->value->value;
+                delete currNode->value;
+                delete currNode;
+                currNode = nextNode;
+            }
+            map.map.table[i] = nullptr;
+        }
+        delete map.head;
+        delete map.tail;
         opfile.close();
     }
     sjtu::vector<T> find(const keys &key){
@@ -785,7 +769,6 @@ public:
         for(int i=temp->now_num;i>t;i--)temp->value[i]=temp->value[i-1];
         temp->value[t]=obj;
         temp->now_num++;
-        writenode(temp,pos);
         if(temp->now_num==size_of_block)devideleaf(pos);
     }
     void erase(keys key,T val){
@@ -803,7 +786,6 @@ public:
                 int t1=sjtu::upper_bound(fa->value,fa->value+fa->now_num,temp->value[0])-fa->value;
                 if(t1!=0){
                     fa->value[t1-1]=temp->value[1];
-                    writenode(fa,temp->pos_of_fa);
                 }
                 else freshleft(fa->pos_of_fa,temp->value[1]);
             }
@@ -816,7 +798,6 @@ public:
                     int t1=sjtu::upper_bound(fa->value,fa->value+fa->now_num,temp->value[0])-fa->value;
                     if(t1!=0){
                         fa->value[t1-1]=right->value[0];
-                        writenode(fa,temp->pos_of_fa);
                     }
                     else freshleft(fa->pos_of_fa,right->value[0]);
                 }
@@ -824,7 +805,6 @@ public:
                     int t1=sjtu::upper_bound(fa->value,fa->value+fa->now_num,temp->value[0])-fa->value;
                     if(t1!=0){
                         fa->value[t1-1]=left->value[left->now_num-1];
-                        writenode(fa,temp->pos_of_fa);
                     }
                     else freshleft(fa->pos_of_fa,left->value[left->now_num-1]);
                 }
@@ -833,7 +813,6 @@ public:
                     int t1=sjtu::upper_bound(fa->value,fa->value+fa->now_num,temp->value[0])-fa->value;
                     if(t1!=0){
                         fa->value[t1-1]=right->value[0];
-                        writenode(fa,temp->pos_of_fa);
                     }
                     else freshleft(fa->pos_of_fa,right->value[0]);
                 }
@@ -841,7 +820,6 @@ public:
         }
         for(int i=t;i<temp->now_num-1;i++)temp->value[i]=temp->value[i+1];
         temp->now_num--;
-        writenode(temp,pos);
         if(temp->now_num<size_of_block/2-1)balanceleaf(pos);
     }
     bool empty()
