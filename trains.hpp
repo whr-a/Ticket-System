@@ -155,8 +155,8 @@ public:
 class train
 {
 public:
-    database<trainID,train_inf> train_base;
-    database<station,bundle> station_base;
+    database<trainID,train_inf,32> train_base;
+    database<station,bundle,512> station_base;
     train(){
         train_base.setfile("train.db");
         station_base.setfile("station.db");

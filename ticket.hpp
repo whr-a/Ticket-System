@@ -52,8 +52,8 @@ public:
 class ticket
 {
 public:
-    database<username,order> order_base;
-    database<train_f,candidate> candidate_base;
+    database<username,order,512> order_base;
+    database<train_f,candidate,512> candidate_base;
     ticket(){
         order_base.setfile("order.db");//设置文件名称
         candidate_base.setfile("candidate.db");
