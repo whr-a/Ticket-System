@@ -29,7 +29,7 @@ int main ()
         if(!getline(std::cin, input))return 0;
         processLine(input,users,trains,tickets,ticket_lefts);
         if(quit_)break;
-        std::cout.flush();
+        //std::cout.flush();
     }
 }
 void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts){

@@ -3,7 +3,7 @@
 #include <cstring>
 #include "vector.hpp"
 #include "Tokenscanner.hpp"
-#include "database_copy.hpp"
+#include "unordered_map.hpp"
 struct node
 {
     char x[21];
@@ -18,9 +18,8 @@ struct node
 };
 int main ()
 {
-    database<int,int> db("11111111111.db");
-    db.insert(1,1);
-    db.insert(2,2);
-    db.insert(3,3);
-    std::cout<<db.find(3)[0];
+    MyUnorderedMap<int,int,128> mp;
+    mp.insert(1,1);
+    mp.insert(2,2);
+    std::cout<<mp[2];
 }
