@@ -2,7 +2,6 @@
 #define USER
 #include <string>
 #include <cstring>
-#include "map.hpp"
 #include "database_copy.hpp"
 #include "utility.hpp"
 class username
@@ -10,7 +9,14 @@ class username
 public:
     char un[21];
     username(){un[0]=0;}
+    username(const username &other){
+        strcpy(un,other.un);
+    }
     username(const char *obj){strcpy(un,obj);}
+    username operator=(const username &obj){
+        strcpy(un,obj.un);
+        return *this;
+    }
     friend bool operator < (const username &obj1,const username &obj2) {
         return strcmp(obj1.un,obj2.un)<0;
     }
@@ -26,6 +32,132 @@ public:
     friend std::ostream & operator<<(std::ostream &os,const username &obj){
         os<<obj.un;
         return os;
+    }
+};
+class MyUnorderedMap {
+public:
+    const static size_t TableSize=65536;
+    struct Nodes {
+        username key;
+        int value;
+        Nodes* next;
+        Nodes(const username& k,int v)
+            : key(k), value(v), next(nullptr) {}
+    };
+    // 构造函数
+    MyUnorderedMap() {
+        table = new Nodes*[TableSize]();
+    }
+    // 析构函数
+    ~MyUnorderedMap() {
+        clear();
+        delete[] table;
+    }
+
+    // 插入键值对
+    void insert(const username& key,int value) {
+        int index = hashFunction(key);
+        Nodes* newNode = new Nodes(key, value);
+        newNode->next = table[index];
+        table[index] = newNode;
+    }
+
+    // 删除键值对
+    void erase(const username& key) {
+        int index = hashFunction(key);
+        Nodes* currNode = table[index];
+        Nodes* prevNode = nullptr;
+
+        while (currNode != nullptr) {
+            if (currNode->key == key) {
+                if (prevNode != nullptr)
+                    prevNode->next = currNode->next;
+                else
+                    table[index] = currNode->next;
+
+                delete currNode;
+                break;
+            }
+
+            prevNode = currNode;
+            currNode = currNode->next;
+        }
+    }
+
+    // 获取值
+    int& operator[](const username& key) {
+        int index = hashFunction(key);
+        Nodes* currNode = table[index];
+
+        while (currNode != nullptr) {
+            if (currNode->key == key)
+                return currNode->value;
+            currNode = currNode->next;
+        }
+
+        Nodes* newNode = new Nodes(key,0);
+        newNode->next = table[index];
+        table[index] = newNode;
+
+        return newNode->value;
+    }
+
+    // 判断键是否存在
+    bool contains(const username& key) const {
+        int index = hashFunction(key);
+        Nodes* currNode = table[index];
+
+        while (currNode != nullptr) {
+            if (currNode->key == key)
+                return true;
+
+            currNode = currNode->next;
+        }
+
+        return false;
+    }
+
+    // 获取键值对数量
+    size_t size() const {
+        size_t count = 0;
+
+        for (int i = 0; i < TableSize; i++) {
+            Nodes* currNode = table[i];
+            while (currNode != nullptr) {
+                count++;
+                currNode = currNode->next;
+            }
+        }
+
+        return count;
+    }
+
+    // 清空哈希表
+    void clear() {
+        for (int i = 0; i < TableSize; i++) {
+            Nodes* currNode = table[i];
+            while (currNode != nullptr) {
+                Nodes* nextNode = currNode->next;
+                delete currNode;
+                currNode = nextNode;
+            }
+            table[i] = nullptr;
+        }
+    }
+
+
+    // 哈希表节点定义
+    
+
+    Nodes** table;  // 哈希表数组
+
+    // 哈希函数
+    int hashFunction(const username& key) const {
+        std::size_t hash = 0;
+        for (int i = 0; i < 21; i++) {
+            hash = (hash * 31) + key.un[i]; // 使用质数 31 进行乘法运算
+        }
+        return hash%TableSize;
     }
 };
 class account{
@@ -51,43 +183,38 @@ public:
 class user{
 public:
     database<username,account> user_base;
-    sjtu::map< username,int > login_set;
-    user(){
+    MyUnorderedMap login_set;
+    user():login_set(){
         user_base.setfile("user.db");
     }
     void clear(){
         user_base.clear("user.db");
+        login_set.clear();
     }
     int adduser(char* c,char* u,char *p,char *n,char *m,int g){
-        //std::cout<<user_base.empty()<<std::endl;
+
         if(user_base.empty()){
-            //std::cout<<1<<std::endl;
+
             user_base.insert(username(u),account(u,p,n,m,10));
             return 0;
         }
-        if(user_base.find(u).empty() && login_set.find(username(c))!=login_set.end()){
-            //std::cout<<2<<std::endl;
+        if(user_base.find(u).empty() && login_set.contains(username(c))){
+
             if(login_set[username(c)]<=g)return -1;
-            //std::cout<<u<<114514<<std::endl;
+
             user_base.insert(username(u),account(u,p,n,m,g));
             return 0;
         }
         else return -1;
     }
     int login(char* u,char* p){
-        // std::cout<< username(u) <<114514<<std::endl;
-        //user_base.prints();
+
         sjtu::vector<account> ans = user_base.find(username(u));
-        if(ans.empty()){
-            // std::cout<< "fuck" <<std::endl;
-            return -1;
-        }
-        if(strcmp(ans[0].password,p)!=0){
-            //std::cout<<2<<std::endl;
-            return -1;
-        }
-        if(login_set.find(username(u))==login_set.end()){
-            login_set.insert(sjtu::pair<username,int>(username(u),ans[0].privilege));
+        if(ans.empty())return -1;
+        
+        if(strcmp(ans[0].password,p)!=0)return -1;
+        if(login_set.contains(username(u))){
+            login_set.insert(username(u),ans[0].privilege);
             return 0;
         }
         else {
@@ -96,14 +223,14 @@ public:
         }
     }
     int logout(char *u){
-        if(login_set.find(username(u))!=login_set.end()){
-            login_set.erase(login_set.find(username(u)));
+        if(login_set.contains(username(u))){
+            login_set.erase(username(u));
             return 0;
         }
         else return -1;
     }
     int query_profile(char *c,char *u){
-        if(login_set.find(username(c))==login_set.end())return -1;
+        if(!login_set.contains(username(c)))return -1;
         sjtu::vector<account> ans=user_base.find(username(u));
         if(ans.empty())return -1;
         if(ans[0].privilege>login_set[username(c)])return -1;
@@ -113,7 +240,7 @@ public:
         return 1;
     }
     int modify_profile(char *c,char *u,bool p_,char *p,bool n_,char *n,bool m_,char *m,bool g_,int g){
-        if(login_set.find(username(c))==login_set.end())return -1;
+        if(!login_set.contains(username(c)))return -1;
         if(g_ && login_set[username(c)]<=g)return -1;
         sjtu::vector<account> ans=user_base.find(username(u));
         if(ans.empty())return -1;
@@ -126,7 +253,7 @@ public:
         if(g_)ans[0].privilege=g;
         user_base.insert(username(u),ans[0]);
         if(g_){
-            if(login_set.find(username(u))!=login_set.end())
+            if(login_set.contains(username(u)))
                 login_set[username(u)]=g;
         }
         std::cout<<ans[0].username<<' '<<ans[0].name<<' '<<ans[0].mailAddr<<' '<<ans[0].privilege<<'\n';

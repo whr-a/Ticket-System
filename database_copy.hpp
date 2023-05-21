@@ -249,7 +249,7 @@ private:
                 Node* node_ = new Node(key, value);
                 map[key] = node_;
                 insertToHead(node_);
-
+                
                 // 检查容量是否超出限制
                 if (map.size() > capacity) {
                     // 超出限制，移除链表尾部的节点
@@ -259,6 +259,7 @@ private:
                     // delete tailNode->value;
                     // delete tailNode;
                 }
+                return nullptr;
             }
         }
 

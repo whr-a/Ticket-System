@@ -63,7 +63,7 @@ public:
         candidate_base.clear("candidate.db");
     }
     int buy_ticket(char* u,char* i,int mm,int dd,int n,char* f,char* t,bool q,train &trains,user &users,int times,ticket_base &ticket_base_){
-        if(users.login_set.find(username(u))==users.login_set.end()){
+        if(!users.login_set.contains(username(u))){
             // std::cout<<444<<std::endl;
             return -1;//用户没登录不能买票
         }
@@ -130,7 +130,7 @@ public:
         }
     }
     int query_order(char* u,train &trains,user &users){
-        if(users.login_set.find(username(u))==users.login_set.end())return -1;
+        if(!users.login_set.contains(username(u)))return -1;
         sjtu::vector<order> result=order_base.find(username(u));
         std::cout<<result.size()<<'\n';
         for(int i=0;i<result.size();i++){
@@ -143,7 +143,7 @@ public:
         return 1;
     }
     int refund_ticket(char* u,int n,train &trains,user &users,ticket_base &ticket_base_){
-        if(users.login_set.find(username(u))==users.login_set.end())return -1;
+        if(!users.login_set.contains(username(u)))return -1;
         sjtu::vector<order> result=order_base.find(username(u));
         if(result.size()<n || result[n-1].status_==refunded)return -1;
         if(result[n-1].status_==pending){
