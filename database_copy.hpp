@@ -43,7 +43,7 @@ private:
         }
     };
 
-    static const int size_of_block=2048/((sizeof(keys)+sizeof(T))*10)*2;
+    static const int size_of_block=1024/(sizeof(keys)+sizeof(T))*2;
     std::fstream opfile;
 
     class start
