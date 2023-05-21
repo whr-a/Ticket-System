@@ -23,12 +23,13 @@ int main ()
     // std::filesystem::remove("candidate.db");
     // std::filesystem::remove("station.db");
     // std::filesystem::remove("ticket.db");
+    // std::filesystem::remove("train_data.db");
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
     // freopen("/dev/null", "w", stdout);
-    // for (int i=1;i<=20;i++){
-    //     std::ifstream in("data/basic_extra/" + std::to_string(i) + ".in");
+    // // for (int i=1;i<=10;i++){
+    //     std::ifstream in("data/pressure_3_hard/" + std::to_string(i) + ".in");
     //     if (!in) break;
     //     std::cerr << i << std::endl;
         user users;
@@ -46,8 +47,8 @@ int main ()
             //std::cout.flush();
         }
         // std::cerr << "run... " << step << std::endl;
-    }
-// }
+    // }
+}
 void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts){
     Tokenscanner scanner;
     scanner.setInput(line);

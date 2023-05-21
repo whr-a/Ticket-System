@@ -188,14 +188,14 @@ public:
     database<trainID,int> train_base;
     database<station,bundle> station_base;
     train_database<train_inf> train_inf_base;
-    train(){
+    train():train_inf_base("train_data.db"){
         train_base.setfile("train.db");
         station_base.setfile("station.db");
     }
     void clear(){
         train_base.clear("train.db");
         station_base.clear("train.db");
-        train_inf_base.clear();
+        train_inf_base.clear("train_data.db");
     }
     int addtrain(char* trainid,int stationnum,int seatnum,std::string* stations_,int* prices_,
         sjtu::daytime starttime,int* traveltimes,int* stopovertimes,sjtu::monthtime* saledate,char type_,ticket_base &ticket_base_){

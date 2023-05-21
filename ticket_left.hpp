@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include "database_copy.hpp"
+#include "train_database.hpp"
 class train_f
 {
 public:
@@ -39,10 +40,10 @@ public:
 class ticket_left
 {
 public:
-    int ticket[101];
+    int ticket[100];
     ticket_left(){}
     ticket_left(const ticket_left &other){
-        for(int i=0;i<101;i++)ticket[i]=other.ticket[i];
+        for(int i=0;i<100;i++)ticket[i]=other.ticket[i];
     }
     ticket_left(int *t,int num){
         for(int i=0;i<num;i++)ticket[i]=t[i];
@@ -58,22 +59,29 @@ public:
 class ticket_base
 {
 public:
-    database<train_f,ticket_left> ticket_base_;
-    ticket_base(){
+    database<train_f,int> ticket_base_;
+    train_database<ticket_left> ticket_database;
+    ticket_base():ticket_database("ticket_database.db"){
         ticket_base_.setfile("ticket.db");
     }
     void add(const train_f &i1,const ticket_left &i2){
-        ticket_base_.insert(i1,i2);
+        int xx=ticket_database.insert(i2);
+        ticket_base_.insert(i1,xx);
     }
     ticket_left query(const train_f &i1){
-        return ticket_base_.find(i1)[0];
+        return ticket_database.find(ticket_base_.find(i1)[0]);
     }
     void erase(const train_f &i1,const ticket_left &i2){
-        ticket_base_.erase(i1,i2);
+        int xx=ticket_base_.find(i1)[0];
+        ticket_database.erase(xx);
+        ticket_base_.erase(i1,xx);
     }
     void modify(const train_f &i1,const ticket_left &i2){
-        ticket_base_.erase(i1,ticket_base_.find(i1)[0]);
-        ticket_base_.insert(i1,i2);
+        int xx=ticket_base_.find(i1)[0];
+        ticket_database.erase(xx);
+        ticket_base_.erase(i1,xx);
+        int xxx=ticket_database.insert(i2);
+        ticket_base_.insert(i1,xxx);
     }
     void clear(){
         ticket_base_.clear("ticket.db");

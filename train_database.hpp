@@ -89,11 +89,11 @@ public:
     std::fstream opfile;
     int max_num;
     Queue q;
-    train_database(){
+    train_database(std::string s){
         std::ifstream in;
-        in.open("train_data.db");
+        in.open(s);
         if(!in){
-            std::ofstream outfile("train_data.db");
+            std::ofstream outfile(s);
             outfile.seekp(0);
             int t1=1;
             outfile.write(reinterpret_cast<char*>(&t1),sizeof(int));
@@ -102,7 +102,7 @@ public:
             outfile.write(reinterpret_cast<char*>(&tem),sizeof(vec_block));
         }
 
-        opfile.open("train_data.db");
+        opfile.open(s);
         opfile.seekg(0);
         opfile.read(reinterpret_cast<char*>(&max_num),sizeof(int));
         opfile.seekg(sizeof(int));
@@ -152,14 +152,14 @@ public:
     void erase(int num){
         q.enqueue(num);
     }
-    void clear(){
-        std::ofstream file("train_data.db", std::ios::trunc);
+    void clear(std::string s){
+        std::ofstream file(s, std::ios::trunc);
         file.close();
         while(!q.isEmpty())q.dequeue();
         std::ifstream in;
-        in.open("train_data.db");
+        in.open(s);
         if(!in){
-            std::ofstream outfile("train_data.db");
+            std::ofstream outfile(s);
             outfile.seekp(0);
             int t1=1;
             outfile.write(reinterpret_cast<char*>(&t1),sizeof(int));
@@ -167,7 +167,7 @@ public:
             outfile.seekp(sizeof(int));
             outfile.write(reinterpret_cast<char*>(&tem),sizeof(vec_block));
         }
-        opfile.open("train_data.db");
+        opfile.open(s);
         opfile.seekg(0);
         opfile.read(reinterpret_cast<char*>(&max_num),sizeof(int));
         opfile.seekg(sizeof(int));
@@ -175,7 +175,7 @@ public:
         opfile.read(reinterpret_cast<char*>(&temp),sizeof(vec_block));
         q.front=nullptr;
         q.rear=nullptr;
-        for(int i=0;i<20000;i++){
+        for(int i=0;i<100000;i++){
             if(temp.data[i]==0)break;
             q.enqueue(temp.data[i]);
         }
