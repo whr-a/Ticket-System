@@ -154,7 +154,7 @@ public:
     // 哈希函数
     int hashFunction(const username& key) const {
         std::size_t hash = 0;
-        for (int i = 0; i < 21; i++) {
+        for (int i = 0; i < strlen(key.un); i++) {
             hash = (hash * 31) + key.un[i]; // 使用质数 31 进行乘法运算
         }
         return hash%TableSize;
@@ -184,9 +184,10 @@ class user{
 public:
     database<username,account> user_base;
     MyUnorderedMap login_set;
-    user():login_set(){
+    user(){
         user_base.setfile("user.db");
     }
+
     void clear(){
         user_base.clear("user.db");
         login_set.clear();
@@ -194,18 +195,22 @@ public:
     int adduser(char* c,char* u,char *p,char *n,char *m,int g){
 
         if(user_base.empty()){
-
             user_base.insert(username(u),account(u,p,n,m,10));
             return 0;
         }
         if(user_base.find(u).empty() && login_set.contains(username(c))){
 
             if(login_set[username(c)]<=g)return -1;
-
+            
             user_base.insert(username(u),account(u,p,n,m,g));
             return 0;
         }
-        else return -1;
+        else {
+            // std::cout<<c<<std::endl;
+            // std::cout<<login_set.hashFunction(username(c));
+
+            return -1;
+        }
     }
     int login(char* u,char* p){
 
@@ -213,8 +218,10 @@ public:
         if(ans.empty())return -1;
         
         if(strcmp(ans[0].password,p)!=0)return -1;
-        if(login_set.contains(username(u))){
+        if(!login_set.contains(username(u))){
             login_set.insert(username(u),ans[0].privilege);
+            // std::cout<<u<<std::endl;
+            // std::cout<<login_set.hashFunction(username(u));
             return 0;
         }
         else {
