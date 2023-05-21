@@ -58,7 +58,7 @@ public:
 class ticket_base
 {
 public:
-    database<train_f,ticket_left,64> ticket_base_;
+    database<train_f,ticket_left> ticket_base_;
     ticket_base(){
         ticket_base_.setfile("ticket.db");
     }

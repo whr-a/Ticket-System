@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(code)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 add_executable(code
         database_copy.hpp
@@ -14,4 +14,5 @@ add_executable(code
         users.hpp
         utility.hpp
         vector.hpp
+        train_database.hpp
         )

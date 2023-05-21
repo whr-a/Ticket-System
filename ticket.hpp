@@ -52,8 +52,8 @@ public:
 class ticket
 {
 public:
-    database<username,order,512> order_base;
-    database<train_f,candidate,512> candidate_base;
+    database<username,order> order_base;
+    database<train_f,candidate> candidate_base;
     ticket(){
         order_base.setfile("order.db");//设置文件名称
         candidate_base.setfile("candidate.db");
@@ -67,36 +67,32 @@ public:
             // std::cout<<444<<std::endl;
             return -1;//用户没登录不能买票
         }
-        sjtu::vector<train_inf> result=trains.train_base.find(trainID(i));//找到火车信息，存在result[0]里
-        // std::cout<<"**************\n";
-        // for(int i=0;i<result[0].stationNum;i++)std::cout<<result[0].money_sum[i]<<' ';
-        // std::cout<<"**************"<<std::endl;
-        if(!result[0].release){
-            // std::cout<<111<<std::endl;
+        sjtu::vector<int> pos=trains.train_base.find(trainID(i));
+        train_inf result=trains.train_inf_base.find(pos[0]);//找到火车信息，存在result[0]里
+
+        if(!result.release){
             return -1;//没放票不能买票
         }
         
         int no1,no2;//找到这两站分别是哪一站
-        for(no1=0;no1<result[0].stationNum;no1++)if(strcmp(f,result[0].stations[no1])==0)break;
-        for(no2=0;no2<result[0].stationNum;no2++)if(strcmp(t,result[0].stations[no2])==0)break;
-        if(no1==result[0].stationNum || no2==result[0].stationNum || no1>=no2){
-            // std::cout<<222<<std::endl;
-            // std::cout<<no1<<' '<<no2<<std::endl;
+        for(no1=0;no1<result.stationNum;no1++)if(strcmp(f,result.stations[no1])==0)break;
+        for(no2=0;no2<result.stationNum;no2++)if(strcmp(t,result.stations[no2])==0)break;
+        if(no1==result.stationNum || no2==result.stationNum || no1>=no2){
             return -1;
         }
-        Time x(7,15,result[0].startTime.hh,result[0].startTime.mm);//开始时间固定
-        x=x+result[0].time_sum[no1];//得到到始发站的时间
+        Time x(7,15,result.startTime.hh,result.startTime.mm);//开始时间固定
+        x=x+result.time_sum[no1];//得到到始发站的时间
         x.setMonth(mm);x.setDay(dd);//再把月份和日给换一下
-        x=x-result[0].time_sum[no1];//减回去得到始发站发车的时间
-        Time st(result[0].saleDate[0],result[0].startTime),
-            ed(result[0].saleDate[1],result[0].startTime);
+        x=x-result.time_sum[no1];//减回去得到始发站发车的时间
+        Time st(result.saleDate[0],result.startTime),
+            ed(result.saleDate[1],result.startTime);
         if(x<st || x>ed){
             // std::cout<<st.toString()<<' '<<ed.toString()<<std::endl;
             // std::cout<<x.toString()<<std::endl;
             return -1;//判断发车时间是否合法
         }
-        int day_=x.days_to(Time(result[0].saleDate[0]));//得到发车时间是第几天
-        x=x+result[0].time_sum[no1];//得到从出发站的发车时间
+        int day_=x.days_to(Time(result.saleDate[0]));//得到发车时间是第几天
+        x=x+result.time_sum[no1];//得到从出发站的发车时间
         int seats=200000;
         ticket_left left_temp(ticket_base_.query(train_f(i,day_)));//调出第day_天发车的余票数组
         for(int k=no1;k<no2;k++){
@@ -107,8 +103,8 @@ public:
             for(int k=no1;k<no2;k++)left_temp.ticket[k]-=n;//从no1到no2-1的所有票数减n
             ticket_base_.modify(train_f(i,day_),left_temp);
             //记入用户的订单信息
-            int money_s=(result[0].money_sum[no2]-result[0].money_sum[no1]);
-            Time ar=x+(result[0].time_sum[no2]-result[0].time_sum[no1]-result[0].stopoverTimes[no2-1]);
+            int money_s=(result.money_sum[no2]-result.money_sum[no1]);
+            Time ar=x+(result.time_sum[no2]-result.time_sum[no1]-result.stopoverTimes[no2-1]);
             order_base.insert(username(u),order(times,day_,success,i,f,no1,t,no2,
                     money_s,n,x,ar));
             long long ansss=money_s*n;
@@ -116,12 +112,12 @@ public:
         }
         else{
             //记入用户的订单信息
-            if(q==false || n>result[0].seatNum){
+            if(q==false || n>result.seatNum){
                 // std::cout<<333<<std::endl;
                 return -1;
             }
-            int money_s=(result[0].money_sum[no2]-result[0].money_sum[no1]);
-            Time ar=x+(result[0].time_sum[no2]-result[0].time_sum[no1]-result[0].stopoverTimes[no2-1]);
+            int money_s=(result.money_sum[no2]-result.money_sum[no1]);
+            Time ar=x+(result.time_sum[no2]-result.time_sum[no1]-result.stopoverTimes[no2-1]);
             order_base.insert(username(u),order(times,day_,pending,i,f,no1,t,no2,
                     money_s,n,x,ar));
             //加入候补队列
@@ -129,8 +125,13 @@ public:
             return -2;
         }
     }
-    int query_order(char* u,train &trains,user &users){
-        if(!users.login_set.contains(username(u)))return -1;
+    int query_order(char* u,train &trains,user &users,int time){
+        if(!users.login_set.contains(username(u))){
+            // if(time==585073){
+            //     std::cout<<111<<std::endl;
+            // }
+            return -1;
+        }
         sjtu::vector<order> result=order_base.find(username(u));
         std::cout<<result.size()<<'\n';
         for(int i=0;i<result.size();i++){

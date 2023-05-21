@@ -182,7 +182,7 @@ public:
 
 class user{
 public:
-    database<username,account,100> user_base;
+    database<username,account> user_base;
     MyUnorderedMap login_set;
     user(){
         user_base.setfile("user.db");

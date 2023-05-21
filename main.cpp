@@ -12,33 +12,49 @@
 #include "utility.hpp"
 #include "ticket.hpp"
 #include "trains.hpp"
+#include "filesystem"
 bool quit_=0;
 void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts);
 int main ()
 {
+    // std::filesystem::remove("user.db");
+    // std::filesystem::remove("train.db");
+    // std::filesystem::remove("order.db");
+    // std::filesystem::remove("candidate.db");
+    // std::filesystem::remove("station.db");
+    // std::filesystem::remove("ticket.db");
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
-    user users;
-    train trains;
-    ticket tickets;
-    ticket_base ticket_lefts;
-    //std::cout<<sizeof(char)<<std::endl;
-    while (true) {
-        std::string input;
-        if(!getline(std::cin, input))return 0;
-        processLine(input,users,trains,tickets,ticket_lefts);
-        if(quit_)break;
-        //std::cout.flush();
+    // freopen("/dev/null", "w", stdout);
+    // for (int i=1;i<=20;i++){
+    //     std::ifstream in("data/basic_extra/" + std::to_string(i) + ".in");
+    //     if (!in) break;
+    //     std::cerr << i << std::endl;
+        user users;
+        train trains;
+        ticket tickets;
+        ticket_base ticket_lefts;
+        //std::cout<<sizeof(char)<<std::endl;
+        int step = 0;
+        while (true) {
+            std::string input;
+            if(!getline(std::cin, input))break;
+            ++step;
+            processLine(input,users,trains,tickets,ticket_lefts);
+            if(quit_) { quit_ = false; break; }
+            //std::cout.flush();
+        }
+        // std::cerr << "run... " << step << std::endl;
     }
-}
+// }
 void processLine(std::string &line,user &users,train &trains,ticket &tickets,ticket_base &ticket_lefts){
     Tokenscanner scanner;
     scanner.setInput(line);
     std::string s=scanner.nextToken();
     if(s.empty())return;
     int time=scanner.check_num(s.substr(1,s.size()-2));
-    // if(time==750566){
+    // if(time==585073){
     //     quit_=1;
     //     return;
     // }
@@ -367,7 +383,7 @@ void processLine(std::string &line,user &users,train &trains,ticket &tickets,tic
         scanner.nextToken();
         strcpy(u,scanner.nextToken().c_str());
         std::cout<<'['<<time<<"] ";
-        if(tickets.query_order(u,trains,users)==-1)std::cout<<-1<<'\n';
+        if(tickets.query_order(u,trains,users,time)==-1)std::cout<<-1<<'\n';
     }else if(s=="refund_ticket"){
         char u[21];
         int n=1;

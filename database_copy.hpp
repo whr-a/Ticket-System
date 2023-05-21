@@ -11,7 +11,7 @@
 #include "utility.hpp"
 #include "vector.hpp"
 
-template<class keys,class T,size_t size_of_store>
+template<class keys,class T>
 class database
 {
 private:
@@ -42,7 +42,8 @@ private:
             return !(obj2<obj1);
         }
     };
-    static const int size_of_block=40;
+
+    static const int size_of_block=2048/(sizeof(keys)+sizeof(T))*2;
     std::fstream opfile;
 
     class start
@@ -112,7 +113,7 @@ private:
         class MyUnorderedMap {
         public:
             // 构造函数
-            const static size_t TableSize=size_of_store;
+            const static size_t TableSize=1024*1024/sizeof(node);
             MyUnorderedMap() {
                 table = new Nodes*[TableSize]();
             }
@@ -312,7 +313,7 @@ private:
         Node* head;  // 链表头节点
         Node* tail;  // 链表尾节点
         MyUnorderedMap map;  // 哈希表，用于快速查找节点
-        static const size_t capacity = size_of_store;  // 容量限制
+        static const size_t capacity = 1024*1024/sizeof(node);  // 容量限制
 
         // 将节点插入到链表头部
         void insertToHead(Node* node) {
