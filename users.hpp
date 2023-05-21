@@ -7,31 +7,40 @@
 class username
 {
 public:
-    char un[21];
-    username(){un[0]=0;}
+
+    size_t un_hash;
+
+    username(){un_hash=0;}
     username(const username &other){
-        strcpy(un,other.un);
+        un_hash=other.un_hash;
     }
-    username(const char *obj){strcpy(un,obj);}
+    username(const char *obj){un_hash=hash_func(obj);}
     username operator=(const username &obj){
-        strcpy(un,obj.un);
+        un_hash=obj.un_hash;
         return *this;
     }
     friend bool operator < (const username &obj1,const username &obj2) {
-        return strcmp(obj1.un,obj2.un)<0;
+        return obj1.un_hash<obj2.un_hash;
     }
     friend bool operator <= (const username &obj1,const username &obj2) {
-        return strcmp(obj1.un,obj2.un)<=0;
+        return obj1.un_hash<=obj2.un_hash;
     }
     friend bool operator == (const username &obj1,const username &obj2) {
-        return strcmp(obj1.un,obj2.un)==0;
+        return obj1.un_hash==obj2.un_hash;
     }
     friend bool operator != (const username &obj1,const username &obj2) {
-        return strcmp(obj1.un,obj2.un)!=0;
+        return obj1.un_hash!=obj2.un_hash;
     }
-    friend std::ostream & operator<<(std::ostream &os,const username &obj){
-        os<<obj.un;
-        return os;
+    // friend std::ostream & operator<<(std::ostream &os,const username &obj){
+    //     os<<obj.un;
+    //     return os;
+    // }
+    size_t hash_func(const char* obj){
+        std::size_t hash = 0;
+        for(int i=0;i<strlen(obj);i++){
+            hash=(hash*31)+obj[i];
+        }
+        return hash;
     }
 };
 class MyUnorderedMap {
@@ -153,11 +162,7 @@ public:
 
     // 哈希函数
     int hashFunction(const username& key) const {
-        std::size_t hash = 0;
-        for (int i = 0; i < strlen(key.un); i++) {
-            hash = (hash * 31) + key.un[i]; // 使用质数 31 进行乘法运算
-        }
-        return hash%TableSize;
+        return key.un_hash%TableSize;
     }
 };
 class account{

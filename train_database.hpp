@@ -72,7 +72,7 @@ public:
 class vec_block
 {
 public:
-    int data[20000];
+    int data[100000];
     vec_block(){memset(data,0,sizeof(data));}
     vec_block(const vec_block &obj){
         for(int i=0;i<20000;i++)data[i]=obj.data[i];

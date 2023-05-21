@@ -11,34 +11,41 @@
 class trainID
 {
 public:
-    char ID[21];
-    trainID(){ID[0]=0;}
+    size_t ID_hash;
+    trainID(){ID_hash=0;}
     trainID(const trainID &obj){
-        strcpy(ID,obj.ID);
+        ID_hash=obj.ID_hash;
     }
-    trainID(char *obj){strcpy(ID,obj);}
+    trainID(const char *obj){ID_hash=hash_func(obj);}
     friend bool operator < (const trainID &obj1,const trainID &obj2) {
-        return strcmp(obj1.ID,obj2.ID)<0;
+        return obj1.ID_hash<obj2.ID_hash;
     }
     friend bool operator <= (const trainID &obj1,const trainID &obj2) {
-        return strcmp(obj1.ID,obj2.ID)<=0;
+        return obj1.ID_hash<=obj2.ID_hash;
     }
     friend bool operator > (const trainID &obj1,const trainID &obj2) {
-        return strcmp(obj1.ID,obj2.ID)>0;
+        return obj1.ID_hash>obj2.ID_hash;
     }
     friend bool operator == (const trainID &obj1,const trainID &obj2) {
-        return strcmp(obj1.ID,obj2.ID)==0;
+        return obj1.ID_hash==obj2.ID_hash;
     }
     friend bool operator != (const trainID &obj1,const trainID &obj2) {
-        return strcmp(obj1.ID,obj2.ID)!=0;
+        return obj1.ID_hash!=obj2.ID_hash;
     }
-    friend std::ostream & operator<<(std::ostream &os,const trainID &obj){
-        os<<obj.ID;
-        return os;
-    }
+    // friend std::ostream & operator<<(std::ostream &os,const trainID &obj){
+    //     os<<obj.ID;
+    //     return os;
+    // }
     trainID operator = (const trainID &obj){
-        strcpy(ID,obj.ID);
+        ID_hash=obj.ID_hash;
         return *this;
+    }
+    size_t hash_func(const char* obj){
+        std::size_t hash = 0;
+        for(int i=0;i<strlen(obj);i++){
+            hash=(hash*31)+obj[i];
+        }
+        return hash;
     }
 };
 
@@ -49,13 +56,13 @@ public:
     char trainID[21];
     int stationNum;
     int seatNum;
-    char stations[101][33];
-    int prices[101];
+    char stations[100][31];
+    int prices[100];
     sjtu::daytime startTime;
-    int travelTimes[101];
-    int stopoverTimes[101];
-    int time_sum[101];
-    int money_sum[101];
+    int travelTimes[100];
+    int stopoverTimes[100];
+    int time_sum[100];
+    int money_sum[100];
     sjtu::monthtime saleDate[2];
     char type;
     bool release;
@@ -147,12 +154,14 @@ public:
 class bundle
 {
 public:
-    trainID ID;
+    char ID[21];
     int pos;
-    bundle(){ID.ID[0]=0;}
-    bundle(trainID ID_,int pos_):ID(ID_),pos(pos_){}
+    bundle(){ID[0]=0;}
+    bundle(char* ID_,int pos_):pos(pos_){
+        strcpy(ID,ID_);
+    }
     friend bool operator< (const bundle &obj1,const bundle &obj2){
-        return strcmp(obj1.ID.ID,obj2.ID.ID)<0;
+        return strcmp(obj1.ID,obj2.ID)<0;
     }
 };
 class sorter
@@ -318,11 +327,11 @@ public:
         sjtu::vector<sorter> anss;//答案存在里面
         while(pointer1<ans1.size() && pointer2<ans2.size()){//搜索
             //if(ans1.size()==1 && ans2.size()==5)std::cout<<pointer1<<' '<<pointer2<<std::endl;
-            if(ans1[pointer1].ID<ans2[pointer2].ID){
+            if(strcmp(ans1[pointer1].ID,ans2[pointer2].ID)<0){
                 ++pointer1;
                 continue;
             }
-            else if(ans1[pointer1].ID>ans2[pointer2].ID){
+            else if(strcmp(ans1[pointer1].ID,ans2[pointer2].ID)>0){
                 ++pointer2;
                 continue;
             }
@@ -364,20 +373,20 @@ public:
                     -result.stopoverTimes[ans2[pointer2].pos-1];//两站之间的时间
                 int price_sum=result.money_sum[ans2[pointer2].pos]-result.money_sum[ans1[pointer1].pos];
                 int no=x.days_to(Time(result.saleDate[0]));//第几趟车
-                ticket_left left_temp(ticket_base_.query(train_f(ans1[pointer1].ID.ID,no)));
+                ticket_left left_temp(ticket_base_.query(train_f(ans1[pointer1].ID,no)));
                 x=x+time1;//出发站时间
                 Time x2=x+time_sum;//到达站时间
                 int seats=200000;
                 for(int i=ans1[pointer1].pos;i<ans2[pointer2].pos;i++){
                     seats=std::min(seats,left_temp.ticket[i]);//找座位最小值
                 }
-                std::string ans=std::string(ans1[pointer1].ID.ID)+" "+std::string(s)+" "+x.toString()+" -> "+
+                std::string ans=std::string(ans1[pointer1].ID)+" "+std::string(s)+" "+x.toString()+" -> "+
                     std::string(t)+" "+x2.toString()+" "+std::to_string(price_sum)+" "+std::to_string(seats);
                 if(p){
-                    anss.push_back(sorter(price_sum,ans1[pointer1].ID.ID,ans));
+                    anss.push_back(sorter(price_sum,ans1[pointer1].ID,ans));
                 }
                 else{
-                    anss.push_back(sorter(time_sum,ans1[pointer1].ID.ID,ans));
+                    anss.push_back(sorter(time_sum,ans1[pointer1].ID,ans));
                 }
                 ++pointer1;
                 ++pointer2;
@@ -396,7 +405,7 @@ public:
         std::string t1_,t2_;//存答案
         bool flag3=0;
         for(int i=0;i<ans1.size();i++){//遍历所有经过出发站的车
-            sjtu::vector<int> pos=train_base.find(ans1[i].ID);
+            sjtu::vector<int> pos=train_base.find(trainID(ans1[i].ID));
             train_inf result=train_inf_base.find(pos[0]);//第一辆车的信息
             if(!result.release)continue;//没发布则不行
             Time xxx(7,15,result.startTime.hh,result.startTime.mm);//发车时间
@@ -425,11 +434,11 @@ public:
                 std::string ans;
                 Time mid_time=xxx+time_first;//这是到达中转站的时间
                 while(pointer1<ans2.size() && pointer2<ans3.size()){//遍历从中转站到终点站的所有车
-                    if(ans2[pointer1].ID<ans3[pointer2].ID){
+                    if(strcmp(ans2[pointer1].ID,ans3[pointer2].ID)<0){
                         pointer1++;
                         continue;
                     }
-                    else if(ans2[pointer1].ID>ans3[pointer2].ID){
+                    else if(strcmp(ans2[pointer1].ID,ans3[pointer2].ID)>0){
                         pointer2++;
                         continue;
                     }
@@ -439,12 +448,12 @@ public:
                             ++pointer2;
                             continue;
                         }
-                        if(strcmp(ans1[i].ID.ID,ans2[pointer1].ID.ID)==0){//转的车和前面的车是同一辆车
+                        if(strcmp(ans1[i].ID,ans2[pointer1].ID)==0){//转的车和前面的车是同一辆车
                             ++pointer1;
                             ++pointer2;
                             continue;
                         }
-                        sjtu::vector<int> pos_2=train_base.find(ans2[pointer1].ID);
+                        sjtu::vector<int> pos_2=train_base.find(trainID(ans2[pointer1].ID));
                         train_inf results=train_inf_base.find(pos_2[0]);//经过中转站的这辆车已找到
                         if(!results.release){//这辆车没放出来
                             ++pointer1;
@@ -490,11 +499,11 @@ public:
                         else flag=1;//找到了满足条件的第二辆车
                         Time x2=x+time_sum_;//到达终点站的时间
                         int seats=200000;
-                        ticket_left left_temp(ticket_base_.query(train_f(ans2[pointer1].ID.ID,no)));//no为第二辆车是第几班
+                        ticket_left left_temp(ticket_base_.query(train_f(ans2[pointer1].ID,no)));//no为第二辆车是第几班
                         for(int k=ans2[pointer1].pos;k<ans3[pointer2].pos;k++){
                             seats=std::min(seats,left_temp.ticket[k]);
                         }
-                        ans=std::string(ans2[pointer1].ID.ID)+" "+std::string(result.stations[j])+" "+x.toString()+" -> "+
+                        ans=std::string(ans2[pointer1].ID)+" "+std::string(result.stations[j])+" "+x.toString()+" -> "+
                             std::string(t)+" "+x2.toString()+" "+std::to_string(price_sum)+" "+std::to_string(seats);
                         cost_s=price_sum;
                         time_s=time_sum;
@@ -516,11 +525,11 @@ public:
                 }
                 else flag2=1;
                 int seatsss=200000;
-                ticket_left left_temp_(ticket_base_.query(train_f(ans1[i].ID.ID,no_)));
+                ticket_left left_temp_(ticket_base_.query(train_f(ans1[i].ID,no_)));
                 for(int k=ans1[i].pos;k<j;k++){
                     seatsss=std::min(seatsss,left_temp_.ticket[k]);
                 }
-                t1=std::string(ans1[i].ID.ID)+" "+std::string(s)+" "+xxx.toString()+" -> "+
+                t1=std::string(ans1[i].ID)+" "+std::string(s)+" "+xxx.toString()+" -> "+
                     std::string(result.stations[j])+" "+mid_time.toString()+" "+std::to_string(cost_first)+" "+std::to_string(seatsss);
                 t2=ans;
                 time_summ=time_sums;

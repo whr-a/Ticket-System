@@ -13,9 +13,9 @@ public:
     int date;//第几天的车
     status status_;
     char trainID[21];
-    char from[33];
+    char from[31];
     int no1;//起始第几站
-    char to[33];
+    char to[31];
     int no2;//结束第几站
     int price;
     int num;
